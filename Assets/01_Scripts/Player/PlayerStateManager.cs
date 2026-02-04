@@ -7,6 +7,9 @@ public class PlayerStateManager : MonoBehaviour
 {
     public bool isAttacking { get; set; } = false;
     public bool isLockedOn { get; set; } = false;
+    public bool isHit { get; set; } = false;
+    public bool isDead { get; set; } = false;
+    public bool isDashing { get; set; } = false;
 
     public GameObject targetEnemy { get; set; }
     public float targetDistance { get; set; }
