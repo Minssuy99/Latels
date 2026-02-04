@@ -16,7 +16,7 @@ public class FollowCamera : MonoBehaviour
         }
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         if (!_player)
             return;
