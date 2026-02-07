@@ -5,8 +5,8 @@ using Random = UnityEngine.Random;
 
 public class EnemyAttack : MonoBehaviour
 {
-    [SerializeField] private float HP = 100f;
-    [SerializeField] private bool superArmor = false;
+    [SerializeField] public float HP = 100f;
+    [SerializeField] private bool superArmor = false; // 디버깅용
     [SerializeField] private GameObject[] PunchHitboxes;
     [SerializeField] private GameObject[] KickHitboxes;
     [SerializeField] private GameObject[] PunchDangerZones;
@@ -20,6 +20,11 @@ public class EnemyAttack : MonoBehaviour
     private float attackCooldown;
     private float hitCooldown = 0f;
     private float hitCooldownDuration = 0.1f;
+    private int hitCount;
+
+    private Renderer[] renderers;
+    private Material[][] originalMaterials;
+    [SerializeField] private Material HitMaterial;
 
     /****************************************/
     /************* Unity Events *************/
@@ -30,6 +35,13 @@ public class EnemyAttack : MonoBehaviour
         _collider = GetComponent<CapsuleCollider>();
         enemyState = GetComponent<EnemyStateManager>();
 
+        renderers = GetComponentsInChildren<Renderer>();
+        originalMaterials = new Material[renderers.Length][];
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            originalMaterials[i] = renderers[i].materials;
+        }
     }
 
     private void Start()
@@ -70,45 +82,116 @@ public class EnemyAttack : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("PlayerHitbox"))
+        if (!other.CompareTag("PlayerHitbox")) return;
+
+        Debug.Log("I'm Hit");
+        HitFlash();
+        HP -= 5;
+        hitCooldown = hitCooldownDuration;
+
+        if (HP <= 0)
         {
-            if (hitCooldown > 0) return;
+            transform.LookAt(enemyState.player.transform);
+            enemyState.animator.SetTrigger("Die");
+            _collider.enabled = false;
+            enabled = false;
+            enemyState.agent.enabled = false;
+            enemyState.area.RemoveEnemy(enemyState);
 
-            hitCooldown = hitCooldownDuration;
+            StartCoroutine(SinkAndDestroy());
+            return;
+        }
 
-            HP -= 5;
-            Debug.Log(HP);
+        if (Time.timeScale < 1f)
+        {
+            DiableAllHitboxes();
+            return;
+        }
 
-            if (HP <= 0)
+        if (superArmor)
+        {
+            return;
+        }
+
+        if (enemyState.isAttacking)
+        {
+            if (hitCount >= 3)
             {
-                enemyState.animator.SetTrigger("Die");
-                _collider.enabled = false;
-                enabled = false;
-                enemyState.agent.enabled = false;
-                StartCoroutine(SinkAndDestroy());
-            }
-            else if ((enemyState.isAttacking && Random.value <= 0.5) || superArmor)
-            {
-                enemyState.isAttacking = false;
+                hitCount = 0;
+                superArmor = true;
             }
             else
             {
-                enemyState.animator.Play("Base Layer.Hit", 0, 0f);
-                enemyState.isHit = true;
-                enemyState.RotateToPlayer = true;
-                enemyState.isAttacking = false;
-                attackCooldown = Random.Range(1, 3);
-
-                foreach (var hitbox in PunchHitboxes)
-                {
-                    hitbox.SetActive(false);
-                }
-
-                foreach (var hitbox in KickHitboxes)
-                {
-                    hitbox.SetActive(false);
-                }
+                InterruptAttack();
+                hitCount++;
+                Debug.Log($"HitCount: {hitCount}");
             }
+            return;
+        }
+        enemyState.RotateToPlayer = true;
+        InterruptAttack();
+    }
+
+    private void InterruptAttack()
+    {
+        enemyState.animator.SetTrigger("Hit");
+        enemyState.isHit = true;
+        enemyState.isAttacking = false;
+        attackCooldown = Random.Range(1, 3);
+
+        DiableAllHitboxes();
+    }
+
+    private void DiableAllHitboxes()
+    {
+        foreach (var hitbox in PunchHitboxes)
+        {
+            hitbox.SetActive(false);
+        }
+
+        foreach (var hitbox in KickHitboxes)
+        {
+            hitbox.SetActive(false);
+        }
+
+        foreach (var dangerZone in PunchDangerZones)
+        {
+            dangerZone.SetActive(false);
+        }
+
+        foreach (var dangerZone in KickDangerZones)
+        {
+            dangerZone.SetActive(false);
+        }
+    }
+
+    private void HitFlash()
+    {
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            int count = originalMaterials[i].Length;
+            Material[] newMats = new Material[count];
+
+            for (int j = 0; j < count; j++)
+            {
+                newMats[j] = HitMaterial;
+            }
+            renderers[i].materials = newMats;
+        }
+
+        StartCoroutine(RestoreMaterials());
+    }
+
+    IEnumerator RestoreMaterials()
+    {
+        HitMaterial.SetColor("_BaseColor", Color.red);
+        yield return new WaitForSecondsRealtime(0.1f);
+        HitMaterial.SetColor("_BaseColor", Color.white);
+        yield return new WaitForSecondsRealtime(0.1f);
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            renderers[i].materials = originalMaterials[i];
         }
     }
 
@@ -185,6 +268,8 @@ public class EnemyAttack : MonoBehaviour
         enemyState.isAttacking = false;
         attackCooldown = Random.Range(1, 3);
         enemyState.rotationLocked = false;
+        superArmor = false;
+        hitCount = 0;
     }
 
     public void OnHitEnd()
