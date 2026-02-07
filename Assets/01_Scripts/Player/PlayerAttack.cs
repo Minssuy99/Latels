@@ -75,6 +75,7 @@ public class PlayerAttack : MonoBehaviour
     private void Update()
     {
         if (playerState.isDashing) return;
+        if (!playerState.canAttack) return;
 
         playerState.targetDistance = SelectNearestEnemy();
 
@@ -141,8 +142,6 @@ public class PlayerAttack : MonoBehaviour
                     playerState.targetEnemy = enemy.gameObject;
                 }
             }
-            if(playerState.targetEnemy != null)
-                Debug.Log(playerState.targetEnemy.name);
         }
         else
         {
