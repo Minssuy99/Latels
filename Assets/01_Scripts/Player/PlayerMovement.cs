@@ -2,10 +2,14 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [SerializeField] private Volume globalVolume;
+    private Bloom bloom;
+
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float rotationSpeed = 20f;
 
@@ -29,11 +33,19 @@ public class PlayerMovement : MonoBehaviour
     private float baseFixedDeltaTime;
     private bool canDash = true;
 
+    private float groundY;
 
     private void Awake()
     {
         baseFixedDeltaTime = Time.fixedDeltaTime;
         playerState = GetComponent<PlayerStateManager>();
+    }
+
+    private void Start()
+    {
+        groundY = transform.position.y;
+
+        globalVolume.profile.TryGet(out bloom);
     }
 
     public void OnMove(InputValue value)
@@ -58,7 +70,7 @@ public class PlayerMovement : MonoBehaviour
             _dashDirection = transform.forward;
         }
         bool perfectDodge = dodgeDetector.isEnemyAttackNearby && !playerState.isHit;
-        Debug.Log($"대쉬! perfectDodge: {dodgeDetector.isEnemyAttackNearby}");
+
         if (perfectDodge)
         {
             StartCoroutine(BulletTimeCoroutine());
@@ -71,6 +83,11 @@ public class PlayerMovement : MonoBehaviour
         if (playerState.isDead)
             return;
 
+        if (playerState.characterController.isGrounded)
+        {
+            groundY = transform.position.y;
+        }
+
         HandleMovement();
         HandleRotation();
         UpdateAnimParameter();
@@ -79,9 +96,40 @@ public class PlayerMovement : MonoBehaviour
         ApplyRotation();
     }
 
+    private void LateUpdate()
+    {
+        if (transform.position.y > groundY + 0.05f && !playerState.characterController.isGrounded)
+        {
+            Vector3 pos = transform.position;
+            pos.y = groundY;
+
+            playerState.characterController.enabled = false;
+            transform.position = pos;
+            playerState.characterController.enabled = true;
+        }
+    }
+
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        float groundY = transform.position.y;
+
+        if (hit.gameObject.CompareTag("Enemy"))
+        {
+            if (transform.position.y > groundY + 0.1f)
+            {
+                playerState.characterController.enabled = false;
+                Vector3 pos = transform.position;
+                pos.y = groundY;
+                transform.position = pos;
+                playerState.characterController.enabled = true;
+            }
+        }
+    }
+
     IEnumerator DashCoroutine(bool perfectDodge)
     {
         canDash = false;
+        playerState.canAttack = false;
 
         playerState.isDashing = true;
         playerState.isAttacking = false;
@@ -95,14 +143,19 @@ public class PlayerMovement : MonoBehaviour
         yield return new WaitForSecondsRealtime(dashDuration);
 
         playerState.isDashing = false;
-        yield return new WaitForSecondsRealtime(dashCoolTime);
 
+        yield return new WaitForSecondsRealtime(0.1f);
+        playerState.canAttack = true;
+
+        yield return new WaitForSecondsRealtime(dashCoolTime - 0.1f);
         canDash = true;
     }
 
     IEnumerator BulletTimeCoroutine()
     {
         float slowScale = 0.1f;
+
+        bloom.tint.value = Color.red;
 
         Debug.Log("불렛타임 시작!");  // 추가
 
@@ -116,6 +169,8 @@ public class PlayerMovement : MonoBehaviour
         Time.timeScale = 1f;
         Time.fixedDeltaTime = baseFixedDeltaTime;
         playerState.animator.updateMode = AnimatorUpdateMode.Normal;
+
+        bloom.tint.value = Color.white;
     }
 
     private void HandleMovement()
@@ -175,8 +230,8 @@ public class PlayerMovement : MonoBehaviour
             float currentZ = playerState.animator.GetFloat("VelocityZ");
 
             float smoothTime = 0.1f;
-            float smoothX = Mathf.SmoothDamp(currentX, targetX, ref _velocityXSmooth, smoothTime);
-            float smoothZ = Mathf.SmoothDamp(currentZ, targetZ, ref _velocityZSmooth, smoothTime);
+            float smoothX = Mathf.SmoothDamp(currentX, targetX, ref _velocityXSmooth, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+            float smoothZ = Mathf.SmoothDamp(currentZ, targetZ, ref _velocityZSmooth, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
 
             playerState.animator.SetFloat("VelocityX", smoothX);
             playerState.animator.SetFloat("VelocityZ", smoothZ);
