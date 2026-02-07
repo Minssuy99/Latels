@@ -11,6 +11,8 @@ public class PlayerStateManager : MonoBehaviour
     public bool isDead { get; set; } = false;
     public bool isDashing { get; set; } = false;
 
+    public bool canAttack { get; set; } = true;
+
     public GameObject targetEnemy { get; set; }
     public float targetDistance { get; set; }
 
