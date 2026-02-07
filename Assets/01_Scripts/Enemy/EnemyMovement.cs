@@ -27,6 +27,8 @@ public class EnemyMovement : MonoBehaviour
         if (!enemyState.player)
             return;
 
+        if (!enemyState.agent.enabled) return;
+
         if (enemyState.playerState.isDead)
         {
             enemyState.animator.SetBool("isRunning", false);
@@ -38,7 +40,10 @@ public class EnemyMovement : MonoBehaviour
 
         if (enemyState.RotateToPlayer)
         {
-            transform.LookAt(enemyState.player.transform);
+            if (Time.timeScale > 0.1)
+            {
+                transform.LookAt(enemyState.player.transform);
+            }
             enemyState.RotateToPlayer = false;
         }
 
@@ -60,7 +65,9 @@ public class EnemyMovement : MonoBehaviour
         }
 
         enemyState.targetDistance = Vector3.Distance(transform.position, enemyState.player.transform.position);
-        transform.LookAt(enemyState.player.transform);
+
+        if(Time.timeScale > 0.1f)
+            transform.LookAt(enemyState.player.transform);
 
         if (enemyState.targetDistance <= enemyState.agent.stoppingDistance)
         {
