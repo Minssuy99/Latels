@@ -19,6 +19,8 @@ public class EnemyStateManager : MonoBehaviour
     public bool RotateToPlayer { get; set; } = false;
     public bool rotationLocked { get; set; } = false;
 
+    public Area area { get; set; }
+
     private void Awake()
     {
         player = GameObject.FindGameObjectWithTag("Player");
@@ -27,8 +29,9 @@ public class EnemyStateManager : MonoBehaviour
         agent =  GetComponent<NavMeshAgent>();
     }
 
-    public void Activate()
+    public void Activate(Area area)
     {
         animator.SetBool("isReady", true);
+        this.area = area;
     }
 }
