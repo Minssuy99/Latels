@@ -6,24 +6,24 @@ using Random = UnityEngine.Random;
 public class EnemyAttack : MonoBehaviour
 {
     [SerializeField] public float HP = 100f;
-    [SerializeField] private bool superArmor = false; // 디버깅용
+    [SerializeField] public bool superArmor = false; // 디버깅용
     [SerializeField] private GameObject[] PunchHitboxes;
     [SerializeField] private GameObject[] KickHitboxes;
     [SerializeField] private GameObject[] PunchDangerZones;
     [SerializeField] private GameObject[] KickDangerZones;
 
     private EnemyStateManager enemyState;
-    private CapsuleCollider _collider;
+    public CapsuleCollider capsuleCollider;
 
-    private int attackType;
-    private float attackRange;
-    private float attackCooldown;
-    private float hitCooldown = 0f;
-    private float hitCooldownDuration = 0.1f;
-    private int hitCount;
+    public int attackType;
+    public float attackRange;
+    public float attackCooldown;
+    public float hitCooldown = 0f;
+    public float hitCooldownDuration = 0.1f;
+    public int hitCount;
 
-    private Renderer[] renderers;
-    private Material[][] originalMaterials;
+    public Renderer[] renderers;
+    public Material[][] originalMaterials;
     [SerializeField] private Material HitMaterial;
 
     /****************************************/
@@ -32,7 +32,7 @@ public class EnemyAttack : MonoBehaviour
 
     private void Awake()
     {
-        _collider = GetComponent<CapsuleCollider>();
+        capsuleCollider = GetComponent<CapsuleCollider>();
         enemyState = GetComponent<EnemyStateManager>();
 
         renderers = GetComponentsInChildren<Renderer>();
@@ -56,28 +56,6 @@ public class EnemyAttack : MonoBehaviour
         {
             hitCooldown -= Time.unscaledDeltaTime;
         }
-
-        if (Time.timeScale < 1f && enemyState.isAttacking)
-        {
-            enemyState.rotationLocked = true;
-        }
-
-        if (enemyState.playerState.isDead) return;
-
-        if (!enemyState.isReady) return;
-
-        if (!enemyState.isAttacking && enemyState.targetDistance <= attackRange)
-        {
-            attackCooldown -= Time.deltaTime;
-
-            if (attackCooldown <= 0)
-            {
-                attackType =  Random.Range(0, 3);
-                enemyState.animator.SetInteger("AttackType", attackType);
-                enemyState.animator.SetTrigger("Attack");
-                enemyState.isAttacking = true;
-            }
-        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -91,18 +69,17 @@ public class EnemyAttack : MonoBehaviour
 
         if (HP <= 0)
         {
-            transform.LookAt(enemyState.player.transform);
-            enemyState.animator.SetTrigger("Die");
-            _collider.enabled = false;
-            enabled = false;
-            enemyState.agent.enabled = false;
-            enemyState.area.RemoveEnemy(enemyState);
-
-            StartCoroutine(SinkAndDestroy());
+            enemyState.ChangeState(enemyState.deadState);
             return;
         }
 
         if (Time.timeScale < 1f)
+        {
+            DiableAllHitboxes();
+            return;
+        }
+
+        if (enemyState.playerState.isUsingMainSkill)
         {
             DiableAllHitboxes();
             return;
@@ -113,7 +90,7 @@ public class EnemyAttack : MonoBehaviour
             return;
         }
 
-        if (enemyState.isAttacking)
+        if (enemyState.currentState is EnemyAttackState)
         {
             if (hitCount >= 3)
             {
@@ -134,15 +111,10 @@ public class EnemyAttack : MonoBehaviour
 
     private void InterruptAttack()
     {
-        enemyState.animator.SetTrigger("Hit");
-        enemyState.isHit = true;
-        enemyState.isAttacking = false;
-        attackCooldown = Random.Range(1, 3);
-
-        DiableAllHitboxes();
+        enemyState.ChangeState(enemyState.hitState);
     }
 
-    private void DiableAllHitboxes()
+    public void DiableAllHitboxes()
     {
         foreach (var hitbox in PunchHitboxes)
         {
@@ -165,7 +137,7 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 
-    private void HitFlash()
+    public void HitFlash()
     {
         for (int i = 0; i < renderers.Length; i++)
         {
@@ -194,24 +166,6 @@ public class EnemyAttack : MonoBehaviour
             renderers[i].materials = originalMaterials[i];
         }
     }
-
-    IEnumerator SinkAndDestroy()
-    {
-        float sinkSpeed = 0.25f;
-        float sinkDistance = 1f;
-        float sunk = 0f;
-
-        yield return new WaitForSeconds(3f);
-        while (sunk < sinkDistance)
-        {
-            float delta = sinkSpeed * Time.deltaTime;
-            transform.position -= Vector3.up * delta;
-            sunk += delta;
-            yield return null;
-        }
-        Destroy(gameObject);
-    }
-
 
     /****************************************/
     /*********** Animation Events ***********/
@@ -265,16 +219,12 @@ public class EnemyAttack : MonoBehaviour
 
     public void OnAttackEnd()
     {
-        enemyState.isAttacking = false;
-        attackCooldown = Random.Range(1, 3);
-        enemyState.rotationLocked = false;
-        superArmor = false;
-        hitCount = 0;
+        enemyState.ChangeState(enemyState.chaseState);
     }
 
     public void OnHitEnd()
     {
-        enemyState.isHit = false;
+        enemyState.ChangeState(enemyState.chaseState);
     }
 
     private void OnDrawGizmosSelected()

@@ -46,45 +46,10 @@ public class EnemyMovement : MonoBehaviour
             }
             enemyState.RotateToPlayer = false;
         }
-
-        if (enemyState.isHit)
-        {
-            return;
-        }
-
-        if (!enemyState.isReady)
-            return;
-
-        if (enemyState.isAttacking)
-        {
-            if (!enemyState.rotationLocked)
-            {
-                transform.LookAt(enemyState.player.transform);
-            }
-            return;
-        }
-
-        enemyState.targetDistance = Vector3.Distance(transform.position, enemyState.player.transform.position);
-
-        if(Time.timeScale > 0.1f)
-            transform.LookAt(enemyState.player.transform);
-
-        if (enemyState.targetDistance <= enemyState.agent.stoppingDistance)
-        {
-            enemyState.agent.isStopped = true;
-            enemyState.animator.SetBool("isRunning", false);
-
-        }
-        else
-        {
-            enemyState.agent.isStopped = false;
-            enemyState.agent.SetDestination(enemyState.player.transform.position);
-            enemyState.animator.SetBool("isRunning", true);
-        }
     }
 
     public void Ready()
     {
-        enemyState.isReady = true;
+        enemyState.ChangeState(enemyState.chaseState);
     }
 }
