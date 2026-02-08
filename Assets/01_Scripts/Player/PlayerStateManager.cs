@@ -5,11 +5,13 @@ using UnityEngine;
 
 public class PlayerStateManager : MonoBehaviour
 {
+    [SerializeField] public GameObject Hitbox;
     public bool isAttacking { get; set; } = false;
     public bool isLockedOn { get; set; } = false;
     public bool isHit { get; set; } = false;
     public bool isDead { get; set; } = false;
     public bool isDashing { get; set; } = false;
+    public bool isUsingMainSkill { get; set; } = false;
 
     public bool canAttack { get; set; } = true;
 

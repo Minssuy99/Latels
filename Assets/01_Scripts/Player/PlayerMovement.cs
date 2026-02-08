@@ -80,8 +80,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        if (playerState.isDead)
-            return;
+        if (playerState.isDead) return;
+        if (playerState.isUsingMainSkill) return;
 
         if (playerState.characterController.isGrounded)
         {

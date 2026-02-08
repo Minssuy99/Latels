@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class PlayerAttack : MonoBehaviour
 {
-    [SerializeField] private GameObject Hitbox;
     [SerializeField] private float HP = 100;
     [SerializeField] private float attackRange = 1.5f;
     [SerializeField] private float lockOnRange = 3.0f;
@@ -42,7 +41,7 @@ public class PlayerAttack : MonoBehaviour
                 playerState.animator.SetLayerWeight(4, 0f);
 
                 // Debug.LogWarning("I'm Dead");
-                Hitbox.SetActive(false);
+                playerState.Hitbox.SetActive(false);
 
                 playerState.animator.SetTrigger("Die");
 
@@ -76,6 +75,7 @@ public class PlayerAttack : MonoBehaviour
     {
         if (playerState.isDashing) return;
         if (!playerState.canAttack) return;
+        if (playerState.isUsingMainSkill) return;
 
         playerState.targetDistance = SelectNearestEnemy();
 
@@ -118,7 +118,7 @@ public class PlayerAttack : MonoBehaviour
         else
         {
             playerState.isAttacking = false;
-            Hitbox.SetActive(false);
+            playerState.Hitbox.SetActive(false);
         }
     }
 
@@ -146,19 +146,19 @@ public class PlayerAttack : MonoBehaviour
         else
         {
             playerState.targetEnemy = null;
-            Hitbox.SetActive(false);
+            playerState.Hitbox.SetActive(false);
         }
         return targetDistance;
     }
 
     public void EnableHitbox()
     {
-        Hitbox.SetActive(true);
+        playerState.Hitbox.SetActive(true);
     }
 
     public void DisableHitbox()
     {
-        Hitbox.SetActive(false);
+        playerState.Hitbox.SetActive(false);
     }
 
     public void OnHitEnd()
