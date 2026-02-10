@@ -1,99 +1,46 @@
-using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] private Volume globalVolume;
-    private Bloom bloom;
+    private PlayerStateManager playerState;
 
+    // 이동 설정
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float rotationSpeed = 20f;
 
-    private PlayerStateManager playerState;
+    // 이동 상태
+    [HideInInspector] public Vector3 moveDirection;
+    private Vector3 lastDirection;
+    private Quaternion targetRotation;
+    private bool wasDiagonal;
 
-    private Vector3 _moveDirection;
-    private Vector3 _dashDirection;
-    private Vector3 _lastDirection;
-    private Quaternion _targetRotation;
-    private bool _wasDiagonal;
+    // 애니메이션
+    private float velocityXSmooth = 0f;
+    private float velocityZSmooth = 0f;
 
-    private float _xValue;
-    private float _zValue;
-    private float _velocityXSmooth = 0f;
-    private float _velocityZSmooth = 0f;
-
-    [SerializeField] private DodgeDetector dodgeDetector;
-    [SerializeField] private float dashCoolTime = 3f;
-    [SerializeField] private float dashDuration = 0.5f;
-    [SerializeField] private float dashSpeed = 10f;
-    private float baseFixedDeltaTime;
-    private bool canDash = true;
-
+    // 충돌 보정
     private float groundY;
+
+    // 헬퍼
+    private float dt => BulletTimeManager.Instance.playerSlowDown ? Time.deltaTime : Time.unscaledDeltaTime;
 
     private void Awake()
     {
-        baseFixedDeltaTime = Time.fixedDeltaTime;
         playerState = GetComponent<PlayerStateManager>();
     }
 
     private void Start()
     {
         groundY = transform.position.y;
-
-        globalVolume.profile.TryGet(out bloom);
-    }
-
-    public void OnMove(InputValue value)
-    {
-        _xValue = value.Get<Vector2>().x;
-        _zValue = value.Get<Vector2>().y;
-    }
-
-    public void OnDash(InputValue value)
-    {
-        if (playerState.isDashing) return;
-        if (playerState.isDead) return;
-        if (!canDash) return;
-
-        if (_moveDirection.sqrMagnitude > 0f)
-        {
-            _dashDirection = _moveDirection;
-            transform.rotation = Quaternion.LookRotation(_dashDirection);
-        }
-        else
-        {
-            _dashDirection = transform.forward;
-        }
-        bool perfectDodge = dodgeDetector.isEnemyAttackNearby && !playerState.isHit;
-
-        if (perfectDodge)
-        {
-            StartCoroutine(BulletTimeCoroutine());
-        }
-        StartCoroutine(DashCoroutine(perfectDodge));
     }
 
     private void Update()
     {
-        if (playerState.isDead) return;
-        if (playerState.isUsingMainSkill) return;
-
         if (playerState.characterController.isGrounded)
         {
             groundY = transform.position.y;
         }
-
-        HandleMovement();
-        HandleRotation();
-        UpdateAnimParameter();
-        UpdateAttackLayers();
-        UpdateHitLayers();
-        ApplyRotation();
     }
 
     private void LateUpdate()
@@ -109,112 +56,43 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void OnControllerColliderHit(ControllerColliderHit hit)
+    public void OnMove(InputValue value)
     {
-        float groundY = transform.position.y;
-
-        if (hit.gameObject.CompareTag("Enemy"))
-        {
-            if (transform.position.y > groundY + 0.1f)
-            {
-                playerState.characterController.enabled = false;
-                Vector3 pos = transform.position;
-                pos.y = groundY;
-                transform.position = pos;
-                playerState.characterController.enabled = true;
-            }
-        }
+        Vector2 input = value.Get<Vector2>();
+        moveDirection = new Vector3(input.x, 0, input.y);
     }
 
-    IEnumerator DashCoroutine(bool perfectDodge)
+    public void HandleMovement()
     {
-        canDash = false;
-        playerState.canAttack = false;
-
-        playerState.isDashing = true;
-        playerState.isAttacking = false;
-        playerState.isHit = false;
-        playerState.animator.SetLayerWeight(1, 0f);
-        playerState.animator.SetLayerWeight(2, 0f);
-        playerState.animator.SetLayerWeight(3, 0f);
-        playerState.animator.SetLayerWeight(4, 0f);
-        playerState.animator.SetTrigger("Dash");
-
-        yield return new WaitForSecondsRealtime(dashDuration);
-
-        playerState.isDashing = false;
-
-        yield return new WaitForSecondsRealtime(0.1f);
-        playerState.canAttack = true;
-
-        yield return new WaitForSecondsRealtime(dashCoolTime - 0.1f);
-        canDash = true;
-    }
-
-    IEnumerator BulletTimeCoroutine()
-    {
-        float slowScale = 0.1f;
-
-        bloom.tint.value = Color.red;
-
-        Debug.Log("불렛타임 시작!");  // 추가
-
-        Time.timeScale = slowScale;
-        Time.fixedDeltaTime = baseFixedDeltaTime * slowScale;
-        playerState.animator.updateMode = AnimatorUpdateMode.UnscaledTime;
-
-        yield return new WaitForSecondsRealtime(4f);
-
-        Debug.Log("불렛타임 끝!");  // 추가
-        Time.timeScale = 1f;
-        Time.fixedDeltaTime = baseFixedDeltaTime;
-        playerState.animator.updateMode = AnimatorUpdateMode.Normal;
-
-        bloom.tint.value = Color.white;
-    }
-
-    private void HandleMovement()
-    {
-        _moveDirection = new Vector3(_xValue, 0, _zValue);
-
-        if (playerState.isDashing)
-        {
-            playerState.characterController.Move(_dashDirection * (dashSpeed * Time.unscaledDeltaTime));
-        }
-        else if (_moveDirection.sqrMagnitude > 0f)
+        if (moveDirection.sqrMagnitude > 0f)
         {
             CheckDirection();
-            playerState.characterController.Move(_lastDirection * (moveSpeed * Time.unscaledDeltaTime));
+            playerState.characterController.Move(lastDirection * (moveSpeed * dt));
         }
-
     }
 
-    private void HandleRotation()
+    public void HandleRotation()
     {
-        if(playerState.isDashing) return;
-
         if (playerState.isLockedOn && playerState.targetEnemy != null)
         {
             Vector3 enemyDirection = playerState.targetEnemy.transform.position - transform.position;
             enemyDirection.y = 0f;
-            _targetRotation = Quaternion.LookRotation(enemyDirection);
+            targetRotation = Quaternion.LookRotation(enemyDirection);
         }
         else
         {
-            if (_moveDirection.sqrMagnitude > 0f)
+            if (moveDirection.sqrMagnitude > 0f)
             {
-                _targetRotation = Quaternion.LookRotation(_moveDirection);
+                targetRotation = Quaternion.LookRotation(moveDirection);
             }
         }
     }
 
-    private void UpdateAnimParameter()
+    public void UpdateAnimParameter()
     {
-        if (playerState.isDashing) return;
-
         if (playerState.isLockedOn)
         {
-            Vector3 worldInput = new Vector3(_xValue, 0, _zValue);
+            Vector3 worldInput = moveDirection;
 
             if (worldInput.sqrMagnitude > 0.1f)
             {
@@ -230,94 +108,39 @@ public class PlayerMovement : MonoBehaviour
             float currentZ = playerState.animator.GetFloat("VelocityZ");
 
             float smoothTime = 0.1f;
-            float smoothX = Mathf.SmoothDamp(currentX, targetX, ref _velocityXSmooth, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-            float smoothZ = Mathf.SmoothDamp(currentZ, targetZ, ref _velocityZSmooth, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+            float smoothX = Mathf.SmoothDamp(currentX, targetX, ref velocityXSmooth, smoothTime, Mathf.Infinity, dt);
+            float smoothZ = Mathf.SmoothDamp(currentZ, targetZ, ref velocityZSmooth, smoothTime, Mathf.Infinity, dt);
 
             playerState.animator.SetFloat("VelocityX", smoothX);
             playerState.animator.SetFloat("VelocityZ", smoothZ);
-            playerState.animator.SetFloat("Velocity", _moveDirection.magnitude);
+            playerState.animator.SetFloat("Velocity", moveDirection.magnitude);
         }
         else
         {
             playerState.animator.SetLayerWeight(1, 0.0f);
             playerState.animator.SetLayerWeight(2, 0.0f);
-            playerState.animator.SetFloat("Velocity", _moveDirection.magnitude);
+            playerState.animator.SetFloat("Velocity", moveDirection.magnitude);
         }
     }
 
-    private void UpdateAttackLayers()
+    public void ApplyRotation()
     {
-        if (playerState.isDashing) return;
-
-        if (playerState.isAttacking)
-        {
-            bool isMoving = _moveDirection.sqrMagnitude > 0.1f;
-
-            if (isMoving)
-            {
-                playerState.animator.SetLayerWeight(1, 0.0f);
-                playerState.animator.SetLayerWeight(2, 1.0f);
-            }
-            else
-            {
-                playerState.animator.SetLayerWeight(1, 1.0f);
-                playerState.animator.SetLayerWeight(2, 0.0f);
-            }
-        }
-        else
-        {
-            playerState.animator.SetLayerWeight(1, 0.0f);
-            playerState.animator.SetLayerWeight(2, 0.0f);
-        }
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * dt);
     }
 
-    private void UpdateHitLayers()
+    public void CheckDirection()
     {
-        if(playerState.isDashing) return;
-
-        if (playerState.isHit)
-        {
-            bool isMoving = _moveDirection.sqrMagnitude > 0.1f;
-
-            if (isMoving || playerState.isAttacking)
-            {
-                playerState.animator.SetLayerWeight(3, 0f);
-                playerState.animator.SetLayerWeight(4, 1f);
-            }
-            else
-            {
-                playerState.animator.SetLayerWeight(3, 1f);
-                playerState.animator.SetLayerWeight(4, 0f);
-            }
-        }
-        else
-        {
-            playerState.animator.SetLayerWeight(3, 0f);
-            playerState.animator.SetLayerWeight(4, 0f);
-        }
-    }
-
-    private void ApplyRotation()
-    {
-        if (playerState.isDashing) return;
-
-        transform.rotation = Quaternion.Slerp(transform.rotation, _targetRotation, rotationSpeed * Time.unscaledDeltaTime);
-    }
-
-    private void CheckDirection()
-    {
-        bool isDiagonal = (_xValue != 0 && _zValue != 0);
-        bool isSingleDirection = (_xValue != 0 || _zValue != 0) && !isDiagonal;
+        bool isDiagonal = (moveDirection.x != 0 && moveDirection.z != 0);
+        bool isSingleDirection = (moveDirection.x != 0 || moveDirection.z != 0) && !isDiagonal;
 
         if (isDiagonal)
         {
-            _lastDirection = _moveDirection;
+            lastDirection = moveDirection;
         }
-        else if (isSingleDirection && !_wasDiagonal)
+        else if (isSingleDirection && !wasDiagonal)
         {
-            _lastDirection = _moveDirection;
+            lastDirection = moveDirection;
         }
-
-        _wasDiagonal = isDiagonal;
+        wasDiagonal = isDiagonal;
     }
 }
