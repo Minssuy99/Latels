@@ -1,18 +1,6 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-
-public enum EnemyState
-{
-    Inactive,
-    Ready,
-    Chasing,
-    Attacking,
-    Hit,
-    Dead
-}
+using System.Collections;
 
 public class EnemyStateManager : MonoBehaviour
 {
@@ -27,19 +15,15 @@ public class EnemyStateManager : MonoBehaviour
     public EnemyReadyState readyState { get; private set; }
     public EnemyDeadState deadState { get; private set; }
 
-
-
-    public GameObject player { get; set; }
+    public GameObject player { get; private set; }
     public PlayerStateManager playerState { get; private set; }
-    public Animator animator { get; set; }
+    public Animator animator { get; private set; }
     public NavMeshAgent agent { get; set; }
 
     public float targetDistance { get; set; }
-
-    public bool RotateToPlayer { get; set; } = false;
     public bool rotationLocked { get; set; } = false;
 
-    public Area area { get; set; }
+    public Area area { get; private set; }
 
     private void Awake()
     {
@@ -50,20 +34,30 @@ public class EnemyStateManager : MonoBehaviour
         readyState = new EnemyReadyState(this);
         deadState = new EnemyDeadState(this);
 
-        player = GameObject.FindGameObjectWithTag("Player");
-        attack = GetComponent<EnemyAttack>();
-        playerState = player.GetComponent<PlayerStateManager>();
         animator = GetComponent<Animator>();
+        attack = GetComponent<EnemyAttack>();
         agent =  GetComponent<NavMeshAgent>();
+        player = GameObject.FindGameObjectWithTag("Player");
+        playerState = player.GetComponent<PlayerStateManager>();
     }
 
     private void Start()
     {
         ChangeState(inactiveState);
+        agent.updateRotation = false;
     }
 
     private void Update()
     {
+        if (playerState.IsDead)
+        {
+            if (currentState is not EnemyInactiveState && currentState is not EnemyDeadState)
+            {
+                ChangeState(inactiveState);
+                return;
+            }
+        }
+
         currentState.Update();
     }
 
@@ -82,6 +76,20 @@ public class EnemyStateManager : MonoBehaviour
         ChangeState(readyState);
         this.area = area;
     }
+    public void Ready()
+    {
+        ChangeState(chaseState);
+    }
+
+    public void OnAttackEnd()
+    {
+        ChangeState(chaseState);
+    }
+
+    public void OnHitEnd()
+    {
+        ChangeState(chaseState);
+    }
 
     public IEnumerator SinkAndDestroy()
     {
@@ -99,6 +107,4 @@ public class EnemyStateManager : MonoBehaviour
         }
         Destroy(gameObject);
     }
-
-
 }

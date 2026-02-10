@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class EnemyHitState : EnemyBaseState
 {
     public EnemyHitState(EnemyStateManager enemy) : base(enemy)
@@ -6,8 +8,13 @@ public class EnemyHitState : EnemyBaseState
 
     public override void Enter()
     {
+        if (Time.timeScale > 0.1f)
+        {
+            enemy.transform.LookAt(enemy.player.transform);
+        }
+
         enemy.animator.SetTrigger("Hit");
-        enemy.attack.DiableAllHitboxes();
+        enemy.attack.DisableAllHitboxes();
     }
 
     public override void Update()

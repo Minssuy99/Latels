@@ -6,7 +6,13 @@ public class EnemyInactiveState : EnemyBaseState
 
     public override void Enter()
     {
-
+        if (enemy.playerState.IsDead)
+        {
+            enemy.animator.SetBool("isRunning", false);
+            enemy.animator.SetBool("isReady", false);
+            enemy.agent.isStopped = true;
+            enemy.transform.LookAt(enemy.player.transform);
+        }
     }
 
     public override void Update()
