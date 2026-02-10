@@ -1,52 +1,42 @@
-using System;
-using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class EnemyAttack : MonoBehaviour
+public class EnemyAttack : MonoBehaviour, IDamageable
 {
-    [SerializeField] public float HP = 100f;
-    [SerializeField] public bool superArmor = false; // 디버깅용
+    [SerializeField] private float hp = 100f;
+    public float HP => hp;
+
+    private EnemyStateManager enemyState;
+    [HideInInspector] public CapsuleCollider capsuleCollider;
+
+    // 전투 설정
+    [HideInInspector] public bool superArmor = false;
+    [HideInInspector] public int attackType;
+    [HideInInspector] public float attackCooldown;
+
+    // 피격
+    [SerializeField] private float hitCooldownDuration = 0.1f;
+    [HideInInspector] public int hitCount;
+    private float hitCooldown = 0f;
+
+    [Header("히트박스")]
     [SerializeField] private GameObject[] PunchHitboxes;
     [SerializeField] private GameObject[] KickHitboxes;
+    [Header("Danger Zone")]
     [SerializeField] private GameObject[] PunchDangerZones;
     [SerializeField] private GameObject[] KickDangerZones;
 
-    private EnemyStateManager enemyState;
-    public CapsuleCollider capsuleCollider;
-
-    public int attackType;
-    public float attackRange;
-    public float attackCooldown;
-    public float hitCooldown = 0f;
-    public float hitCooldownDuration = 0.1f;
-    public int hitCount;
-
-    public Renderer[] renderers;
-    public Material[][] originalMaterials;
-    [SerializeField] private Material HitMaterial;
-
-    /****************************************/
-    /************* Unity Events *************/
-    /****************************************/
+    private EnemyHitEffect hitEffect;
 
     private void Awake()
     {
         capsuleCollider = GetComponent<CapsuleCollider>();
         enemyState = GetComponent<EnemyStateManager>();
-
-        renderers = GetComponentsInChildren<Renderer>();
-        originalMaterials = new Material[renderers.Length][];
-
-        for (int i = 0; i < renderers.Length; i++)
-        {
-            originalMaterials[i] = renderers[i].materials;
-        }
+        hitEffect = GetComponent<EnemyHitEffect>();
     }
 
     private void Start()
     {
-        attackRange = enemyState.agent.stoppingDistance;
         attackCooldown = Random.Range(1, 3);
     }
 
@@ -62,51 +52,7 @@ public class EnemyAttack : MonoBehaviour
     {
         if (!other.CompareTag("PlayerHitbox")) return;
 
-        Debug.Log("I'm Hit");
-        HitFlash();
-        HP -= 5;
-        hitCooldown = hitCooldownDuration;
-
-        if (HP <= 0)
-        {
-            enemyState.ChangeState(enemyState.deadState);
-            return;
-        }
-
-        if (Time.timeScale < 1f)
-        {
-            DiableAllHitboxes();
-            return;
-        }
-
-        if (enemyState.playerState.isUsingMainSkill)
-        {
-            DiableAllHitboxes();
-            return;
-        }
-
-        if (superArmor)
-        {
-            return;
-        }
-
-        if (enemyState.currentState is EnemyAttackState)
-        {
-            if (hitCount >= 3)
-            {
-                hitCount = 0;
-                superArmor = true;
-            }
-            else
-            {
-                InterruptAttack();
-                hitCount++;
-                Debug.Log($"HitCount: {hitCount}");
-            }
-            return;
-        }
-        enemyState.RotateToPlayer = true;
-        InterruptAttack();
+        TakeDamage(5);
     }
 
     private void InterruptAttack()
@@ -114,7 +60,7 @@ public class EnemyAttack : MonoBehaviour
         enemyState.ChangeState(enemyState.hitState);
     }
 
-    public void DiableAllHitboxes()
+    public void DisableAllHitboxes()
     {
         foreach (var hitbox in PunchHitboxes)
         {
@@ -136,40 +82,6 @@ public class EnemyAttack : MonoBehaviour
             dangerZone.SetActive(false);
         }
     }
-
-    public void HitFlash()
-    {
-        for (int i = 0; i < renderers.Length; i++)
-        {
-            int count = originalMaterials[i].Length;
-            Material[] newMats = new Material[count];
-
-            for (int j = 0; j < count; j++)
-            {
-                newMats[j] = HitMaterial;
-            }
-            renderers[i].materials = newMats;
-        }
-
-        StartCoroutine(RestoreMaterials());
-    }
-
-    IEnumerator RestoreMaterials()
-    {
-        HitMaterial.SetColor("_BaseColor", Color.red);
-        yield return new WaitForSecondsRealtime(0.1f);
-        HitMaterial.SetColor("_BaseColor", Color.white);
-        yield return new WaitForSecondsRealtime(0.1f);
-
-        for (int i = 0; i < renderers.Length; i++)
-        {
-            renderers[i].materials = originalMaterials[i];
-        }
-    }
-
-    /****************************************/
-    /*********** Animation Events ***********/
-    /****************************************/
 
     public void SetHitbox(int action)
     {
@@ -217,19 +129,56 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 
-    public void OnAttackEnd()
+    public void DisableCollider()
     {
-        enemyState.ChangeState(enemyState.chaseState);
+        capsuleCollider.enabled = false;
     }
 
-    public void OnHitEnd()
+    public void TakeDamage(float damage)
     {
-        enemyState.ChangeState(enemyState.chaseState);
-    }
+        if (hitCooldown > 0) return;
 
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        hitEffect.HitFlash();
+        hp -= damage;
+        hitCooldown = hitCooldownDuration;
+
+        if (HP <= 0)
+        {
+            enemyState.ChangeState(enemyState.deadState);
+            return;
+        }
+
+        if (Time.timeScale < 1f)
+        {
+            DisableAllHitboxes();
+            return;
+        }
+
+        if (enemyState.playerState.IsUsingSkill)
+        {
+            DisableAllHitboxes();
+            return;
+        }
+
+        if (superArmor)
+        {
+            return;
+        }
+
+        if (enemyState.currentState is EnemyAttackState)
+        {
+            if (hitCount >= 3)
+            {
+                hitCount = 0;
+                superArmor = true;
+            }
+            else
+            {
+                InterruptAttack();
+                hitCount++;
+            }
+            return;
+        }
+        InterruptAttack();
     }
 }

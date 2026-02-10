@@ -1,14 +1,14 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
-public class PlayerAttack : MonoBehaviour
+
+public class PlayerAttack : MonoBehaviour, IDamageable
 {
     [SerializeField] private float HP = 100;
+    [SerializeField] private GameObject hitbox;
     [SerializeField] private float attackRange = 1.5f;
     [SerializeField] private float lockOnRange = 3.0f;
-    List<EnemyStateManager> enemies = new List<EnemyStateManager>();
+    private List<EnemyStateManager> enemies = new List<EnemyStateManager>();
 
     private PlayerStateManager playerState;
 
@@ -17,108 +17,30 @@ public class PlayerAttack : MonoBehaviour
         playerState = GetComponent<PlayerStateManager>();
     }
 
+    private void Update()
+    {
+        if (playerState.IsDashing) return;
+        if (!playerState.canAttack) return;
+        if (playerState.IsUsingSkill) return;
+
+        playerState.targetDistance = SelectNearestEnemy();
+
+        UpdateLockOn();
+        UpdateAttack();
+    }
+
     private void OnTriggerEnter(Collider other)
     {
-        if (playerState.isDead) return;
+        if (playerState.IsDead) return;
 
         if (other.CompareTag("Area"))
         {
-            Area area = other.GetComponent<Area>();
-            enemies = area.GetEnemies();
+            HandleAreaEnter(other);
         }
 
         if (other.CompareTag("EnemyHitbox"))
         {
-            if (playerState.isDashing) return;
-
-            HP -= 5;
-
-            if (HP <= 0)
-            {
-                playerState.animator.SetLayerWeight(1, 0f);
-                playerState.animator.SetLayerWeight(2, 0f);
-                playerState.animator.SetLayerWeight(3, 0f);
-                playerState.animator.SetLayerWeight(4, 0f);
-
-                // Debug.LogWarning("I'm Dead");
-                playerState.Hitbox.SetActive(false);
-
-                playerState.animator.SetTrigger("Die");
-
-                playerState.isDead = true;
-                playerState.isAttacking = false;
-                playerState.isHit = false;
-                enabled = false;
-
-                return;
-            }
-
-            bool isMoving = playerState.characterController.velocity.magnitude > 0.1f;
-            bool isAttacking = playerState.isAttacking;
-
-            if (isMoving || isAttacking)
-            {
-                playerState.animator.SetLayerWeight(3, 0f);  // Full Hit
-                playerState.animator.SetLayerWeight(4, 1f);  // Upper Hit
-            }
-            else
-            {
-                playerState.animator.SetLayerWeight(3, 1f);  // Full Hit
-                playerState.animator.SetLayerWeight(4, 0f);  // Upper Hit
-            }
-            playerState.animator.SetTrigger("Hit");
-            playerState.isHit = true;
-        }
-    }
-
-    private void Update()
-    {
-        if (playerState.isDashing) return;
-        if (!playerState.canAttack) return;
-        if (playerState.isUsingMainSkill) return;
-
-        playerState.targetDistance = SelectNearestEnemy();
-
-        if (playerState.targetEnemy != null)
-        {
-            if (playerState.targetDistance <= lockOnRange)
-            {
-                playerState.isLockedOn = true;
-                playerState.animator.SetBool("isLockedOn", true);
-                // Debug.LogWarning($"Locking on! : " + playerState.targetEnemy.name);
-            }
-            else
-            {
-                if (playerState.isLockedOn)
-                {
-                    playerState.animator.SetBool("isLockedOn", false);
-                    playerState.isLockedOn = false;
-                    // Debug.LogWarning("Locking off");
-                }
-            }
-        }
-        else
-        {
-            playerState.isLockedOn = false;
-            playerState.animator.SetBool("isLockedOn", false);
-        }
-
-        if (!playerState.targetEnemy)
-        {
-            playerState.animator.ResetTrigger("Attack");
-            return;
-        }
-
-        if (playerState.targetDistance <= attackRange)
-        {
-            // Debug.LogWarning($"Attack! : " + playerState.targetEnemy.name);
-            playerState.isAttacking = true;
-            playerState.animator.SetTrigger("Attack");
-        }
-        else
-        {
-            playerState.isAttacking = false;
-            playerState.Hitbox.SetActive(false);
+            TakeDamage(5);
         }
     }
 
@@ -146,19 +68,70 @@ public class PlayerAttack : MonoBehaviour
         else
         {
             playerState.targetEnemy = null;
-            playerState.Hitbox.SetActive(false);
+            hitbox.SetActive(false);
         }
         return targetDistance;
     }
 
+    private void UpdateLockOn()
+    {
+        if (playerState.targetEnemy != null)
+        {
+            if (playerState.targetDistance <= lockOnRange)
+            {
+                playerState.isLockedOn = true;
+                playerState.animator.SetBool("isLockedOn", true);
+            }
+            else
+            {
+                if (playerState.isLockedOn)
+                {
+                    playerState.animator.SetBool("isLockedOn", false);
+                    playerState.isLockedOn = false;
+                }
+            }
+        }
+        else
+        {
+            playerState.isLockedOn = false;
+            playerState.animator.SetBool("isLockedOn", false);
+        }
+    }
+
+    private void UpdateAttack()
+    {
+        if (!playerState.targetEnemy)
+        {
+            playerState.animator.ResetTrigger("Attack");
+            return;
+        }
+
+        if (playerState.targetDistance <= attackRange)
+        {
+            playerState.isAttacking = true;
+            playerState.animator.SetTrigger("Attack");
+        }
+        else
+        {
+            playerState.isAttacking = false;
+            hitbox.SetActive(false);
+        }
+    }
+
+    private void HandleAreaEnter(Collider other)
+    {
+        Area area = other.GetComponent<Area>();
+        enemies = area.GetEnemies();
+    }
+
     public void EnableHitbox()
     {
-        playerState.Hitbox.SetActive(true);
+        hitbox.SetActive(true);
     }
 
     public void DisableHitbox()
     {
-        playerState.Hitbox.SetActive(false);
+        hitbox.SetActive(false);
     }
 
     public void OnHitEnd()
@@ -179,5 +152,34 @@ public class PlayerAttack : MonoBehaviour
 
         Gizmos.color = Color.yellow;
         Gizmos.DrawLine(transform.position, playerState.targetEnemy.transform.position);
+    }
+
+    public void TakeDamage(float damage)
+    {
+        if (playerState.IsDashing) return;
+
+        HP -= damage;
+
+        if (HP <= 0)
+        {
+            playerState.ChangeState(playerState.deadState);
+            return;
+        }
+
+        bool isMoving = playerState.characterController.velocity.magnitude > 0.1f;
+        bool isAttacking = playerState.isAttacking;
+
+        if (isMoving || isAttacking)
+        {
+            playerState.animator.SetLayerWeight(3, 0f);  // Full Hit
+            playerState.animator.SetLayerWeight(4, 1f);  // Upper Hit
+        }
+        else
+        {
+            playerState.animator.SetLayerWeight(3, 1f);  // Full Hit
+            playerState.animator.SetLayerWeight(4, 0f);  // Upper Hit
+        }
+        playerState.animator.SetTrigger("Hit");
+        playerState.isHit = true;
     }
 }

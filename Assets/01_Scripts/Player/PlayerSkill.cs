@@ -14,36 +14,17 @@ public class PlayerSkill : MonoBehaviour
 
     public void OnMainSkill(InputValue value)
     {
-        if (playerState.isUsingMainSkill) return;
-        if (playerState.isDead) return;
+        if (playerState.IsUsingSkill) return;
+        if (playerState.IsDead) return;
         if (playerState.targetEnemy == null) return;
 
-        playerState.isAttacking = false;
-        playerState.isHit = false;
-        playerState.animator.SetLayerWeight(1, 0f);
-        playerState.animator.SetLayerWeight(2, 0f);
-        playerState.animator.SetLayerWeight(3, 0f);
-        playerState.animator.SetLayerWeight(4, 0f);
-        playerState.animator.ResetTrigger("Attack");
-
-        if (playerState.isDashing)
-        {
-            playerState.isDashing = false;
-        }
-
-        Vector3 direction = playerState.targetEnemy.transform.position - transform.position;
-        direction.y = 0;
-
-        transform.rotation = Quaternion.LookRotation(direction);
-        playerState.isUsingMainSkill = true;
-        playerState.animator.SetTrigger("MainSkill");
+        playerState.ChangeState(playerState.skillState);
     }
 
     public void OnMainSkillEnd()
     {
         enemyState.rotationLocked = false;
-        playerState.isUsingMainSkill = false;
-        playerState.animator.applyRootMotion = true;
+        playerState.ChangeState(playerState.idleState);
     }
 
     public void OnTeleportBehindEnemy()
@@ -70,18 +51,14 @@ public class PlayerSkill : MonoBehaviour
 
     IEnumerator MultiHitCoroutine()
     {
-        EnemyAttack ea = enemyState.GetComponent<EnemyAttack>();
-
         for (int i = 0; i < 6; i++)
         {
-            ea.HP -= 5;
-            if (ea.HP <= 0)
-            {
-                ea.HitFlash();
-                enemyState.ChangeState(enemyState.deadState);
-                break;
-            }
-            ea.HitFlash();
+            if (enemyState == null) break;
+
+            enemyState.attack.TakeDamage(5);
+
+            if (enemyState.attack.HP <= 0) break;
+
             if (i < 5)
             {
                 yield return new WaitForSeconds(0.2f);
