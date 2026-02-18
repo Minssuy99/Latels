@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections;
 using UnityEngine.InputSystem;
@@ -9,24 +10,57 @@ public class PlayerDash : MonoBehaviour
     [SerializeField] private DodgeDetector dodgeDetector;
 
     // 대쉬 설정
-    [SerializeField] private float dashCoolTime = 3f;
     [SerializeField] private float dashDuration = 0.4f;
+    [SerializeField] private float chargeTime = 2f;
+    [SerializeField] private float reuseCooldown = 0.5f;
     public float dashSpeed = 8f;
+
+    // 대쉬 스택
+    private int maxStack = 3;
+    private int currentStack = 3;
+    private float chargeTimer = 0f;
+    private float reuseTimer = 0f;
 
     // 런타임
     [HideInInspector] public Vector3 dashDirection;
-    [HideInInspector] public bool canDash = true;
+
+    // UI용 프로퍼티
+    public int CurrentStack => currentStack;
+    public int MaxStack => maxStack;
+    public float ChargeFillAmount => chargeTimer / chargeTime;
+    public bool IsReuseDelay => reuseTimer > 0f;
+    public float ReuseTimer => reuseTimer;
 
     private void Awake()
     {
         playerState = GetComponent<PlayerStateManager>();
     }
 
+    private void Update()
+    {
+        if (reuseTimer > 0f)
+        {
+            reuseTimer -= Time.unscaledDeltaTime;
+        }
+
+        if (currentStack < maxStack)
+        {
+            chargeTimer += Time.unscaledDeltaTime;
+
+            if (chargeTimer > chargeTime)
+            {
+                currentStack++;
+                chargeTimer = 0f;
+            }
+        }
+    }
+
     public void OnDash(InputValue value)
     {
         if (playerState.IsDashing) return;
         if (playerState.IsDead) return;
-        if (!canDash) return;
+        if (playerState.IsUsingSkill) return;
+        if (currentStack < 1 || reuseTimer > 0) return;
 
         if (playerState.move.moveDirection.sqrMagnitude > 0f)
         {
@@ -43,6 +77,9 @@ public class PlayerDash : MonoBehaviour
         {
             StartCoroutine(BulletTimeManager.Instance.StartBulletTime(playerState.animator));
         }
+
+        currentStack--;
+        reuseTimer = reuseCooldown;
         playerState.ChangeState(playerState.dashState);
     }
 
@@ -50,12 +87,16 @@ public class PlayerDash : MonoBehaviour
     {
         yield return new WaitForSecondsRealtime(dashDuration);
 
-        playerState.ChangeState(playerState.idleState);
+        if (playerState.move.moveDirection.sqrMagnitude > 0f)
+        {
+            playerState.ChangeState(playerState.sprintState);
+        }
+        else
+        {
+            playerState.ChangeState(playerState.idleState);
+        }
 
         yield return new WaitForSecondsRealtime(0.1f);
         playerState.canAttack = true;
-
-        yield return new WaitForSecondsRealtime(dashCoolTime - 0.1f);
-        canDash = true;
     }
 }
