@@ -4,7 +4,9 @@ using Random = UnityEngine.Random;
 public class EnemyAttack : MonoBehaviour, IDamageable
 {
     [SerializeField] private float hp = 100f;
+    private float maxHP;
     public float HP => hp;
+    public float MaxHP => maxHP;
 
     private EnemyStateManager enemyState;
     [HideInInspector] public CapsuleCollider capsuleCollider;
@@ -38,6 +40,7 @@ public class EnemyAttack : MonoBehaviour, IDamageable
     private void Start()
     {
         attackCooldown = Random.Range(1, 3);
+        maxHP = hp;
     }
 
     private void Update()
@@ -142,7 +145,7 @@ public class EnemyAttack : MonoBehaviour, IDamageable
         hp -= damage;
         hitCooldown = hitCooldownDuration;
 
-        if (HP <= 0)
+        if (hp <= 0)
         {
             enemyState.ChangeState(enemyState.deadState);
             return;
