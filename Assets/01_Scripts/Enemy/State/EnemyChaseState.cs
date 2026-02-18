@@ -8,6 +8,7 @@ public class EnemyChaseState : EnemyBaseState
 
     public override void Enter()
     {
+        enemy.agent.isStopped = false;
         enemy.animator.SetBool("isRunning", true);
     }
 
