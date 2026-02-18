@@ -1,8 +1,13 @@
 using UnityEngine;
 
-public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
+public class SingletonBase : MonoBehaviour
 {
-    private static T _instance;
+    [SerializeField] protected bool DontDestroy = true;
+}
+
+public class Singleton<T> : SingletonBase where T : MonoBehaviour
+{
+    protected static T _instance;
 
     public static T Instance
     {
@@ -27,18 +32,26 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         {
             _instance = this as T;
 
-            if (transform.parent != null)
+            if (DontDestroy)
             {
-                DontDestroyOnLoad(transform.root.gameObject);
-            }
-            else
-            {
-                DontDestroyOnLoad(gameObject);
+                if (transform.parent != null)
+                {
+                    DontDestroyOnLoad(transform.root.gameObject);
+                }
+                else
+                {
+                    DontDestroyOnLoad(gameObject);
+                }
             }
         }
         else
         {
             Destroy(gameObject);
         }
+    }
+    protected virtual void OnDestroy()
+    {
+        if (_instance == this as T)
+            _instance = null;
     }
 }
