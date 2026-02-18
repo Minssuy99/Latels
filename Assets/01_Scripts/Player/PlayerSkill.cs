@@ -1,9 +1,15 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerSkill : MonoBehaviour
 {
+    public float skillCoolTime = 10f;
+    public float remainTime;
+
+    private bool canUseSkill = true;
+
     private PlayerStateManager playerState;
     private EnemyStateManager enemyState;
 
@@ -12,19 +18,37 @@ public class PlayerSkill : MonoBehaviour
         playerState = GetComponent<PlayerStateManager>();
     }
 
+    private void Update()
+    {
+        if (canUseSkill == false)
+        {
+            remainTime -= Time.unscaledDeltaTime;
+
+            if (remainTime <= 0)
+                canUseSkill = true;
+        }
+    }
+
     public void OnMainSkill(InputValue value)
     {
         if (playerState.IsUsingSkill) return;
         if (playerState.IsDead) return;
         if (playerState.targetEnemy == null) return;
+        if (canUseSkill == false) return;
 
+        canUseSkill = false;
+        remainTime = skillCoolTime;
         playerState.ChangeState(playerState.skillState);
     }
 
     public void OnMainSkillEnd()
     {
         enemyState.rotationLocked = false;
-        playerState.ChangeState(playerState.idleState);
+        if (playerState.move.moveDirection.sqrMagnitude > 0f)
+            playerState.ChangeState(playerState.moveState);
+        else
+            playerState.ChangeState(playerState.idleState);
+        StartCoroutine(InvincibleAfterSkill());
     }
 
     public void OnTeleportBehindEnemy()
@@ -69,5 +93,12 @@ public class PlayerSkill : MonoBehaviour
         {
             enemyState.animator.SetTrigger("Hit");
         }
+    }
+
+    IEnumerator InvincibleAfterSkill()
+    {
+        playerState.isInvincible = true;
+        yield return new WaitForSeconds(1f);
+        playerState.isInvincible = false;
     }
 }
