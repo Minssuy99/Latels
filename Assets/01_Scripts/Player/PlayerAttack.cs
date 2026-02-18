@@ -1,14 +1,23 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 
 
 public class PlayerAttack : MonoBehaviour, IDamageable
 {
-    [SerializeField] private float HP = 100;
+    [SerializeField] private float hp = 100f;
+    private float maxHP;
+    public float HP => hp;
+    public float MaxHP => maxHP;
+
     [SerializeField] private GameObject hitbox;
     [SerializeField] private float attackRange = 1.5f;
     [SerializeField] private float lockOnRange = 3.0f;
+
+    private float hitCooldown = 0f;
+
     private List<EnemyStateManager> enemies = new List<EnemyStateManager>();
+    public List<EnemyStateManager> GetEnemies() => enemies;
 
     private PlayerStateManager playerState;
 
@@ -17,8 +26,20 @@ public class PlayerAttack : MonoBehaviour, IDamageable
         playerState = GetComponent<PlayerStateManager>();
     }
 
+    private void Start()
+    {
+        maxHP = hp;
+    }
+
     private void Update()
     {
+        if (hitCooldown > 0)
+        {
+            hitCooldown -= Time.unscaledDeltaTime;
+            if (hitCooldown <= 0)
+                playerState.isHit = false;
+        }
+        if (playerState.IsSprinting) return;
         if (playerState.IsDashing) return;
         if (!playerState.canAttack) return;
         if (playerState.IsUsingSkill) return;
@@ -27,16 +48,12 @@ public class PlayerAttack : MonoBehaviour, IDamageable
 
         UpdateLockOn();
         UpdateAttack();
+
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (playerState.IsDead) return;
-
-        if (other.CompareTag("Area"))
-        {
-            HandleAreaEnter(other);
-        }
 
         if (other.CompareTag("EnemyHitbox"))
         {
@@ -103,6 +120,7 @@ public class PlayerAttack : MonoBehaviour, IDamageable
         if (!playerState.targetEnemy)
         {
             playerState.animator.ResetTrigger("Attack");
+            playerState.isAttacking = false;
             return;
         }
 
@@ -118,10 +136,9 @@ public class PlayerAttack : MonoBehaviour, IDamageable
         }
     }
 
-    private void HandleAreaEnter(Collider other)
+    public void SetEnemies(List<EnemyStateManager> enemies)
     {
-        Area area = other.GetComponent<Area>();
-        enemies = area.GetEnemies();
+        this.enemies = enemies;
     }
 
     public void EnableHitbox()
@@ -132,11 +149,6 @@ public class PlayerAttack : MonoBehaviour, IDamageable
     public void DisableHitbox()
     {
         hitbox.SetActive(false);
-    }
-
-    public void OnHitEnd()
-    {
-        playerState.isHit = false;
     }
 
     private void OnDrawGizmosSelected()
@@ -157,29 +169,19 @@ public class PlayerAttack : MonoBehaviour, IDamageable
     public void TakeDamage(float damage)
     {
         if (playerState.IsDashing) return;
+        if (playerState.IsUsingSkill) return;
+        if (playerState.isInvincible) return;
 
-        HP -= damage;
+        if (hitCooldown > 0) return;
+        playerState.isHit = true;
+        hitCooldown = 0.1f;
 
-        if (HP <= 0)
+        hp -= damage;
+        InGameUIManager.Instance.ShowDamageEffect();
+
+        if (hp <= 0)
         {
             playerState.ChangeState(playerState.deadState);
-            return;
         }
-
-        bool isMoving = playerState.characterController.velocity.magnitude > 0.1f;
-        bool isAttacking = playerState.isAttacking;
-
-        if (isMoving || isAttacking)
-        {
-            playerState.animator.SetLayerWeight(3, 0f);  // Full Hit
-            playerState.animator.SetLayerWeight(4, 1f);  // Upper Hit
-        }
-        else
-        {
-            playerState.animator.SetLayerWeight(3, 1f);  // Full Hit
-            playerState.animator.SetLayerWeight(4, 0f);  // Upper Hit
-        }
-        playerState.animator.SetTrigger("Hit");
-        playerState.isHit = true;
     }
 }
