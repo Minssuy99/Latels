@@ -9,11 +9,8 @@ public class PlayerSkillState : PlayerBaseState
     public override void Enter()
     {
         player.isAttacking = false;
-        player.isHit = false;
         player.animator.SetLayerWeight(1, 0f);
         player.animator.SetLayerWeight(2, 0f);
-        player.animator.SetLayerWeight(3, 0f);
-        player.animator.SetLayerWeight(4, 0f);
         player.animator.ResetTrigger("Attack");
 
         Vector3 direction = player.targetEnemy.transform.position - player.transform.position;

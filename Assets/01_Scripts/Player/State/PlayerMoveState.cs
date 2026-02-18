@@ -25,7 +25,6 @@ public class PlayerMoveState : PlayerBaseState
         player.move.UpdateAnimParameter();
 
         player.UpdateAttackLayers();
-        player.UpdateHitLayers();
     }
 
     public override void Exit()
