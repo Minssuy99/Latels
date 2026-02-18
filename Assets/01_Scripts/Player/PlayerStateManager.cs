@@ -9,6 +9,7 @@ public class PlayerStateManager : MonoBehaviour
     public PlayerDashState dashState { get; private set; }
     public PlayerSkillState skillState { get; private set; }
     public PlayerDeadState deadState { get; private set; }
+    public PlayerSprintState sprintState { get; private set; }
 
     public PlayerDash dash { get; private set; }
     public PlayerAttack attack  { get; private set; }
@@ -17,9 +18,11 @@ public class PlayerStateManager : MonoBehaviour
     public bool isHit { get; set; }
     public bool isLockedOn { get; set; }
     public bool isAttacking { get; set; }
+    public bool isInvincible { get; set; }
     public bool IsDead => currentState is PlayerDeadState;
     public bool IsDashing => currentState is PlayerDashState;
     public bool IsUsingSkill => currentState is PlayerSkillState;
+    public bool IsSprinting => currentState is PlayerSprintState;
 
     public bool canAttack { get; set; } = true;
 
@@ -36,6 +39,7 @@ public class PlayerStateManager : MonoBehaviour
         dashState = new PlayerDashState(this);
         skillState = new PlayerSkillState(this);
         deadState = new PlayerDeadState(this);
+        sprintState = new PlayerSprintState(this);
 
         move = GetComponent<PlayerMovement>();
         attack = GetComponent<PlayerAttack>();
@@ -67,49 +71,27 @@ public class PlayerStateManager : MonoBehaviour
 
     public void UpdateAttackLayers()
     {
+        float speed = 10f * Time.unscaledDeltaTime;
+
         if (isAttacking)
         {
             bool isMoving = move.moveDirection.sqrMagnitude > 0.1f;
 
             if (isMoving)
             {
-                animator.SetLayerWeight(1, 0.0f);
-                animator.SetLayerWeight(2, 1.0f);
+                animator.SetLayerWeight(1, Mathf.Lerp(animator.GetLayerWeight(1), 0.0f, speed));
+                animator.SetLayerWeight(2, Mathf.Lerp(animator.GetLayerWeight(2), 1.0f, speed));
             }
             else
             {
-                animator.SetLayerWeight(1, 1.0f);
-                animator.SetLayerWeight(2, 0.0f);
+                animator.SetLayerWeight(1, Mathf.Lerp(animator.GetLayerWeight(1), 1.0f, speed));
+                animator.SetLayerWeight(2, Mathf.Lerp(animator.GetLayerWeight(2), 0.0f, speed));
             }
         }
         else
         {
-            animator.SetLayerWeight(1, 0.0f);
-            animator.SetLayerWeight(2, 0.0f);
-        }
-    }
-
-    public void UpdateHitLayers()
-    {
-        if (isHit)
-        {
-            bool isMoving = move.moveDirection.sqrMagnitude > 0.1f;
-
-            if (isMoving || isAttacking)
-            {
-                animator.SetLayerWeight(3, 0f);
-                animator.SetLayerWeight(4, 1f);
-            }
-            else
-            {
-                animator.SetLayerWeight(3, 1f);
-                animator.SetLayerWeight(4, 0f);
-            }
-        }
-        else
-        {
-            animator.SetLayerWeight(3, 0f);
-            animator.SetLayerWeight(4, 0f);
+            animator.SetLayerWeight(1, Mathf.Lerp(animator.GetLayerWeight(1), 0.0f, speed));
+            animator.SetLayerWeight(2, Mathf.Lerp(animator.GetLayerWeight(2), 0.0f, speed));
         }
     }
 }
