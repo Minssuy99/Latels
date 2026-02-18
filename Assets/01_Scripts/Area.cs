@@ -4,38 +4,37 @@ using UnityEngine;
 
 public class Area : MonoBehaviour
 {
-    private List<EnemyStateManager> enemies = new List<EnemyStateManager>();
+    [SerializeField] private GameObject door;
+    [SerializeField] private EnemyAttack boss;
+    public Transform[] spawnPoints;
+    public Transform bossSpawnPoint;
 
-    [SerializeField] private GameObject bossUI;
-    [SerializeField] private GameObject Entrance;
-    [SerializeField] private GameObject Exit;
+    public Action OnCleared;
+
+    private List<EnemyStateManager> enemies = new List<EnemyStateManager>();
+    private bool isEnter = false;
 
     private void Start()
     {
-        for (int i = 0; i < transform.childCount; i++)
-        {
-            EnemyStateManager enemy = transform.GetChild(i).GetComponent<EnemyStateManager>();
-            if (enemy != null)
-                enemies.Add(enemy);
-        }
-
-        Debug.Log($"Enemy : " +  enemies.Count);
-
-        Entrance.SetActive(false);
-        Exit.SetActive(true);
+        door.SetActive(true);
     }
 
     public List<EnemyStateManager> GetEnemies() => enemies;
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"OnTriggerEnter: {other.name}");
+        if (isEnter) return;
+
         if (other.CompareTag("Player"))
         {
-            if(bossUI != null)
-                bossUI.SetActive(true);
+            isEnter = true;
 
-            Entrance.SetActive(true);
+            PlayerAttack playerAttack = other.GetComponent<PlayerAttack>();
+            playerAttack.SetEnemies(enemies);
+
+            if(boss != null)
+                InGameUIManager.Instance.ShowBossHP(boss);
+
             foreach(EnemyStateManager enemy in enemies)
             {
                 enemy.Activate(this);
@@ -43,25 +42,27 @@ public class Area : MonoBehaviour
         }
     }
 
-    private void OnTriggerExit(Collider other)
+    public void AddEnemy(EnemyStateManager enemy)
     {
-        if (other.CompareTag("Player"))
-        {
-            if (enemies.Count == 0)
-            {
-                Exit.SetActive(true);
-            }
-        }
+        enemies.Add(enemy);
     }
 
     public void RemoveEnemy(EnemyStateManager enemy)
     {
         enemies.Remove(enemy);
-        Debug.Log("남은 적 수 : " + enemies.Count);
 
         if (enemies.Count == 0)
         {
-            Exit.SetActive(false);
+            door.SetActive(false);
+            OnCleared?.Invoke();
+
+            if (boss != null)
+                InGameUIManager.Instance.HideBossHP();
         }
+    }
+
+    public void SetBoss(EnemyAttack boss)
+    {
+        this.boss = boss;
     }
 }
