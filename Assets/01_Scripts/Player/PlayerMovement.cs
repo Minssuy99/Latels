@@ -7,6 +7,7 @@ public class PlayerMovement : MonoBehaviour
 
     // 이동 설정
     [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float SprintSpeed = 7f;
     [SerializeField] private float rotationSpeed = 20f;
 
     // 이동 상태
@@ -62,12 +63,13 @@ public class PlayerMovement : MonoBehaviour
         moveDirection = new Vector3(input.x, 0, input.y);
     }
 
-    public void HandleMovement()
+    public void HandleMovement(bool isRunning = false)
     {
         if (moveDirection.sqrMagnitude > 0f)
         {
             CheckDirection();
-            playerState.characterController.Move(lastDirection * (moveSpeed * dt));
+            float speed = isRunning ? SprintSpeed : moveSpeed;
+            playerState.characterController.Move(lastDirection * (speed * dt));
         }
     }
 
