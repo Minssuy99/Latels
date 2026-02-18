@@ -83,11 +83,13 @@ public class EnemyStateManager : MonoBehaviour
 
     public void OnAttackEnd()
     {
+        if (currentState is EnemyDeadState) return;
         ChangeState(chaseState);
     }
 
     public void OnHitEnd()
     {
+        if (currentState is EnemyDeadState) return;
         ChangeState(chaseState);
     }
 
