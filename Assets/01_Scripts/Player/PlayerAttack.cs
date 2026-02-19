@@ -1,7 +1,5 @@
-using System;
 using UnityEngine;
 using System.Collections.Generic;
-
 
 public class PlayerAttack : MonoBehaviour, IDamageable
 {
@@ -35,7 +33,7 @@ public class PlayerAttack : MonoBehaviour, IDamageable
     {
         if (hitCooldown > 0)
         {
-            hitCooldown -= Time.unscaledDeltaTime;
+            hitCooldown -= TimeManager.Instance.PlayerDelta;
             if (hitCooldown <= 0)
                 playerState.isHit = false;
         }

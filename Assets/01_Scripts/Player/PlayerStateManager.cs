@@ -71,7 +71,7 @@ public class PlayerStateManager : MonoBehaviour
 
     public void UpdateAttackLayers()
     {
-        float speed = 10f * Time.unscaledDeltaTime;
+        float speed = 10f * TimeManager.Instance.PlayerDelta;
 
         if (isAttacking)
         {

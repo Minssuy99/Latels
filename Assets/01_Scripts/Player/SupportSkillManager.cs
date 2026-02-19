@@ -1,5 +1,5 @@
-using System.Collections;
 using UnityEngine;
+using System.Collections;
 using UnityEngine.InputSystem;
 
 public class SupportSkillManager : MonoBehaviour
@@ -27,7 +27,7 @@ public class SupportSkillManager : MonoBehaviour
     {
         if (canSubSkill_1 == false)
         {
-            remain_SubSkill_1_CoolTime -= Time.unscaledDeltaTime;
+            remain_SubSkill_1_CoolTime -= TimeManager.Instance.PlayerDelta;
 
             if (remain_SubSkill_1_CoolTime <= 0)
                 canSubSkill_1 = true;

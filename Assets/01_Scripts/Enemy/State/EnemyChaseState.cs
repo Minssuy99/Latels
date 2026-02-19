@@ -29,7 +29,7 @@ public class EnemyChaseState : EnemyBaseState
             enemy.agent.isStopped = true;
             enemy.animator.SetBool("isRunning", false);
 
-            enemy.attack.attackCooldown -= Time.deltaTime;
+            enemy.attack.attackCooldown -= TimeManager.Instance.EnemyDelta;
 
             if (enemy.attack.attackCooldown <= 0)
             {

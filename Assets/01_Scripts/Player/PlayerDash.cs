@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using System.Collections;
 using UnityEngine.InputSystem;
@@ -40,12 +39,12 @@ public class PlayerDash : MonoBehaviour
     {
         if (reuseTimer > 0f)
         {
-            reuseTimer -= Time.unscaledDeltaTime;
+            reuseTimer -= TimeManager.Instance.PlayerDelta;
         }
 
         if (currentStack < maxStack)
         {
-            chargeTimer += Time.unscaledDeltaTime;
+            chargeTimer += TimeManager.Instance.PlayerDelta;
 
             if (chargeTimer > chargeTime)
             {
@@ -75,7 +74,7 @@ public class PlayerDash : MonoBehaviour
 
         if (perfectDodge)
         {
-            StartCoroutine(BulletTimeManager.Instance.StartBulletTime(playerState.animator));
+            TimeManager.Instance.BulletTime(playerState.animator);
         }
 
         currentStack--;

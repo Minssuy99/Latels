@@ -1,10 +1,13 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class StageManager : Singleton<StageManager>
 {
     [SerializeField] private StageClear stageClear;
     public event Action OnStageClear;
+    public PlayerInput PlayerInput => playerInput;
+    private PlayerInput playerInput;
     private int clearAreaCount = 0;
     private int totalAreaCount = 0;
 
@@ -21,7 +24,7 @@ public class StageManager : Singleton<StageManager>
         if (clearAreaCount >= totalAreaCount)
         {
             Debug.Log("스테이지 클리어!");
-            OnStageClear?.Invoke();   // 이거 추가
+            OnStageClear?.Invoke();
         }
     }
 
@@ -49,6 +52,7 @@ public class StageManager : Singleton<StageManager>
         Transform playerSpawn = map.transform.Find("PlayerSpawn");
         GameObject playerObj = Instantiate(GameManager.Instance.mainCharData.battlePrefab, playerSpawn.position, Quaternion.identity);
         InGameUIManager.Instance.SetPlayer(playerObj);
+        playerInput = playerObj.GetComponent<PlayerInput>();
 
         GameObject supportObj = Instantiate(GameManager.Instance.supportChar1_Data.battlePrefab);
         supportObj.SetActive(false);

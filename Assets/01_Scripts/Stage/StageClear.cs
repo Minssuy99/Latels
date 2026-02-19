@@ -55,23 +55,20 @@ public class StageClear : MonoBehaviour
 
     IEnumerator ClearSequence()
     {
-        BulletTimeManager.Instance.playerSlowDown = true;
-        Time.timeScale = 0.1f;
-        Time.fixedDeltaTime = 0.02f * 0.1f;
+        TimeManager.Instance.StartHitStop();
         yield return new WaitForSecondsRealtime(1f);
-        Time.timeScale = 1f;
-        Time.fixedDeltaTime = 0.02f;
-        BulletTimeManager.Instance.playerSlowDown = false;
+
+        TimeManager.Instance.StopHitStop();
         yield return new WaitForSecondsRealtime(1f);
 
         inGameUI.SetActive(false);
         yield return new WaitForSecondsRealtime(1f);
-        Time.timeScale = 0f;
 
+        StageManager.Instance.PlayerInput.enabled = false;
+        yield return new WaitForSecondsRealtime(1f);
         fadeImage.DOFade(1f, 0.75f).SetUpdate(true);
         yield return new WaitForSecondsRealtime(1.5f);
 
-        Time.timeScale = 1f;
         doorLeft.gameObject.SetActive(true);
         doorRight.gameObject.SetActive(true);
         clockImage.gameObject.SetActive(true);

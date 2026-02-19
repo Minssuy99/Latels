@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerSprintState : PlayerBaseState
@@ -23,11 +21,11 @@ public class PlayerSprintState : PlayerBaseState
             return;
         }
 
-        player.move.HandleMovement(true);  // true = 달리기
+        player.move.HandleMovement(true);
         player.move.HandleRotation();
         player.move.ApplyRotation();
         player.move.UpdateAnimParameter();
-        player.animator.SetLayerWeight(3, Mathf.Lerp(player.animator.GetLayerWeight(3), 1f, 10f * Time.unscaledDeltaTime));
+        player.animator.SetLayerWeight(3, Mathf.Lerp(player.animator.GetLayerWeight(3), 1f, 10f * TimeManager.Instance.PlayerDelta));
     }
 
     public override void Exit()

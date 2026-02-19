@@ -1,6 +1,5 @@
-using System;
-using System.Collections;
 using UnityEngine;
+using System.Collections;
 using UnityEngine.InputSystem;
 
 public class PlayerSkill : MonoBehaviour
@@ -22,7 +21,7 @@ public class PlayerSkill : MonoBehaviour
     {
         if (canUseSkill == false)
         {
-            remainTime -= Time.unscaledDeltaTime;
+            remainTime -= TimeManager.Instance.PlayerDelta;
 
             if (remainTime <= 0)
                 canUseSkill = true;

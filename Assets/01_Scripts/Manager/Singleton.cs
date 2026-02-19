@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class SingletonBase : MonoBehaviour
 {
+    [Header("Singleton Setting")]
     [SerializeField] protected bool DontDestroy = true;
 }
 

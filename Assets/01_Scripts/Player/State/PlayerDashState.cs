@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class PlayerDashState : PlayerBaseState
 {
     public PlayerDashState(PlayerStateManager player) : base(player)
@@ -19,7 +17,7 @@ public class PlayerDashState : PlayerBaseState
 
     public override void Update()
     {
-        player.characterController.Move(player.dash.dashDirection * (player.dash.dashSpeed * Time.unscaledDeltaTime));
+        player.characterController.Move(player.dash.dashDirection * (player.dash.dashSpeed * TimeManager.Instance.PlayerDelta));
         player.animator.SetFloat("Velocity", player.move.moveDirection.magnitude);
     }
 

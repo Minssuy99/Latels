@@ -47,7 +47,7 @@ public class EnemyAttack : MonoBehaviour, IDamageable
     {
         if (hitCooldown > 0)
         {
-            hitCooldown -= Time.unscaledDeltaTime;
+            hitCooldown -= TimeManager.Instance.PlayerDelta;
         }
     }
 

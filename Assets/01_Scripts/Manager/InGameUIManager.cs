@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -63,7 +62,7 @@ public class InGameUIManager : Singleton<InGameUIManager>
 
         if (damageVignette.alpha > 0)
         {
-            damageVignette.alpha -= Time.unscaledDeltaTime * VignetteFadeOutSpeed;
+            damageVignette.alpha -= TimeManager.Instance.PlayerDelta * VignetteFadeOutSpeed;
         }
     }
 

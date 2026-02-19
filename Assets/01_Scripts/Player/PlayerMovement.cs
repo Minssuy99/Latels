@@ -23,9 +23,6 @@ public class PlayerMovement : MonoBehaviour
     // 충돌 보정
     private float groundY;
 
-    // 헬퍼
-    private float dt => BulletTimeManager.Instance.playerSlowDown ? Time.deltaTime : Time.unscaledDeltaTime;
-
     private void Awake()
     {
         playerState = GetComponent<PlayerStateManager>();
@@ -69,7 +66,7 @@ public class PlayerMovement : MonoBehaviour
         {
             CheckDirection();
             float speed = isRunning ? SprintSpeed : moveSpeed;
-            playerState.characterController.Move(lastDirection * (speed * dt));
+            playerState.characterController.Move(lastDirection * (speed * TimeManager.Instance.PlayerDelta));
         }
     }
 
@@ -110,8 +107,8 @@ public class PlayerMovement : MonoBehaviour
             float currentZ = playerState.animator.GetFloat("VelocityZ");
 
             float smoothTime = 0.1f;
-            float smoothX = Mathf.SmoothDamp(currentX, targetX, ref velocityXSmooth, smoothTime, Mathf.Infinity, dt);
-            float smoothZ = Mathf.SmoothDamp(currentZ, targetZ, ref velocityZSmooth, smoothTime, Mathf.Infinity, dt);
+            float smoothX = Mathf.SmoothDamp(currentX, targetX, ref velocityXSmooth, smoothTime, Mathf.Infinity, TimeManager.Instance.PlayerDelta);
+            float smoothZ = Mathf.SmoothDamp(currentZ, targetZ, ref velocityZSmooth, smoothTime, Mathf.Infinity, TimeManager.Instance.PlayerDelta);
 
             playerState.animator.SetFloat("VelocityX", smoothX);
             playerState.animator.SetFloat("VelocityZ", smoothZ);
@@ -127,7 +124,8 @@ public class PlayerMovement : MonoBehaviour
 
     public void ApplyRotation()
     {
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * dt);
+        if (playerState.animator.GetCurrentAnimatorStateInfo(0).IsName("Dash")) return;
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * TimeManager.Instance.PlayerDelta);
     }
 
     public void CheckDirection()
