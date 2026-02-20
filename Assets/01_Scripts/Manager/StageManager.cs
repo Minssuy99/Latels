@@ -1,4 +1,5 @@
 using System;
+using Unity.AI.Navigation;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -42,6 +43,7 @@ public class StageManager : Singleton<StageManager>
     {
         StageData stageData = GameManager.Instance.stageData;
         GameObject map = Instantiate(stageData.mapPrefab);
+        map.GetComponent<NavMeshSurface>().BuildNavMesh();
 
         ClearPlace clearPlace = map.GetComponentInChildren<ClearPlace>();
         Instantiate(GameManager.Instance.mainCharData.displayPrefab, clearPlace.mainCharPos.position, clearPlace.mainCharPos.rotation);
