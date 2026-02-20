@@ -20,7 +20,7 @@ public class EnemyChaseState : EnemyBaseState
         {
             if (!enemy.rotationLocked)
             {
-                enemy.transform.LookAt(enemy.player.transform);
+                enemy.transform.LookAt(enemy.playerPos);
             }
         }
 

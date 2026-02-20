@@ -11,7 +11,7 @@ public class EnemyInactiveState : EnemyBaseState
             enemy.animator.SetBool("isRunning", false);
             enemy.animator.SetBool("isReady", false);
             enemy.agent.isStopped = true;
-            enemy.transform.LookAt(enemy.player.transform);
+            enemy.transform.LookAt(enemy.playerPos);
         }
     }
 

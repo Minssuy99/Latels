@@ -10,7 +10,7 @@ public class EnemyDeadState : EnemyBaseState
     {
         enemy.area.RemoveEnemy(enemy);
         enemy.animator.SetTrigger("Die");
-        enemy.transform.LookAt(enemy.player.transform);
+        enemy.transform.LookAt(enemy.playerPos);
         enemy.StartCoroutine(enemy.SinkAndDestroy());
 
         enemy.attack.capsuleCollider.enabled = false;

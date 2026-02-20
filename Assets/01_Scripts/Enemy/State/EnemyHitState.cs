@@ -10,7 +10,7 @@ public class EnemyHitState : EnemyBaseState
     {
         if (Time.timeScale > 0.1f)
         {
-            enemy.transform.LookAt(enemy.player.transform);
+            enemy.transform.LookAt(enemy.playerPos);
         }
 
         enemy.animator.SetTrigger("Hit");

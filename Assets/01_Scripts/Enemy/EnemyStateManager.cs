@@ -16,6 +16,7 @@ public class EnemyStateManager : MonoBehaviour
     public EnemyDeadState deadState { get; private set; }
 
     public GameObject player { get; private set; }
+    public Vector3 playerPos => new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z);
     public PlayerStateManager playerState { get; private set; }
     public Animator animator { get; private set; }
     public NavMeshAgent agent { get; set; }

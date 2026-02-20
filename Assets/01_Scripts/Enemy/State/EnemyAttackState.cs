@@ -22,7 +22,7 @@ public class EnemyAttackState : EnemyBaseState
 
         if (!enemy.rotationLocked)
         {
-            enemy.transform.LookAt(enemy.player.transform);
+            enemy.transform.LookAt(enemy.playerPos);
         }
     }
 
