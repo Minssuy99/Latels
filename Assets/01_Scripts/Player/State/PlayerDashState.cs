@@ -17,7 +17,7 @@ public class PlayerDashState : PlayerBaseState
 
     public override void Update()
     {
-        player.characterController.Move(player.dash.dashDirection * (player.dash.dashSpeed * TimeManager.Instance.PlayerDelta));
+        // player.characterController.Move(player.dash.dashDirection * (player.dash.dashSpeed * TimeManager.Instance.PlayerDelta));
         player.animator.SetFloat("Velocity", player.move.moveDirection.magnitude);
     }
 

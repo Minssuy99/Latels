@@ -84,7 +84,29 @@ public class PlayerDash : MonoBehaviour
 
     public IEnumerator DashCoroutine()
     {
-        yield return new WaitForSecondsRealtime(dashDuration);
+        // yield return new WaitForSecondsRealtime(dashDuration);
+        //
+        // if (playerState.move.moveDirection.sqrMagnitude > 0f)
+        // {
+        //     playerState.ChangeState(playerState.sprintState);
+        // }
+        // else
+        // {
+        //     playerState.ChangeState(playerState.idleState);
+        // }
+        //
+        // yield return new WaitForSecondsRealtime(0.1f);
+        // playerState.canAttack = true;
+
+        float dashDistance = dashSpeed * dashDuration;
+        float moved = 0;
+        while (moved < dashDistance)
+        {
+            float step = dashSpeed * TimeManager.Instance.PlayerDelta;
+            playerState.characterController.Move(dashDirection * step);
+            moved += step;
+            yield return null;
+        }
 
         if (playerState.move.moveDirection.sqrMagnitude > 0f)
         {

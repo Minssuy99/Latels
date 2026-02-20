@@ -72,6 +72,8 @@ public class PlayerMovement : MonoBehaviour
 
     public void HandleRotation()
     {
+        if (playerState.IsDashing) return;
+
         if (playerState.isLockedOn && playerState.targetEnemy != null)
         {
             Vector3 enemyDirection = playerState.targetEnemy.transform.position - transform.position;
@@ -86,7 +88,6 @@ public class PlayerMovement : MonoBehaviour
             }
         }
     }
-
     public void UpdateAnimParameter()
     {
         if (playerState.isLockedOn)
@@ -124,7 +125,6 @@ public class PlayerMovement : MonoBehaviour
 
     public void ApplyRotation()
     {
-        if (playerState.animator.GetCurrentAnimatorStateInfo(0).IsName("Dash")) return;
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * TimeManager.Instance.PlayerDelta);
     }
 
