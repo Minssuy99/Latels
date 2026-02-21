@@ -3,21 +3,15 @@ using System.Collections.Generic;
 
 public class PlayerAttack : MonoBehaviour, IDamageable
 {
-    [SerializeField] private float hp = 100f;
-    private float maxHP;
-    public float HP => hp;
-    public float MaxHP => maxHP;
-
-    [SerializeField] private GameObject hitbox;
-    [SerializeField] private float attackRange = 1.5f;
-    [SerializeField] private float lockOnRange = 3.0f;
-
     private float hitCooldown = 0f;
 
     private List<EnemyStateManager> enemies = new List<EnemyStateManager>();
     public List<EnemyStateManager> GetEnemies() => enemies;
+    public float HP { get; private set; }
+    public float MaxHP => playerData.stats.health;
 
     private PlayerStateManager playerState;
+    private CharacterData playerData;
 
     private void Awake()
     {
@@ -26,7 +20,8 @@ public class PlayerAttack : MonoBehaviour, IDamageable
 
     private void Start()
     {
-        maxHP = hp;
+        playerData = GameManager.Instance.characterSlots[0];
+        HP = playerData.stats.health;
     }
 
     private void Update()
@@ -83,7 +78,7 @@ public class PlayerAttack : MonoBehaviour, IDamageable
         else
         {
             playerState.targetEnemy = null;
-            hitbox.SetActive(false);
+            DisableHitbox();
         }
         return targetDistance;
     }
@@ -92,7 +87,7 @@ public class PlayerAttack : MonoBehaviour, IDamageable
     {
         if (playerState.targetEnemy != null)
         {
-            if (playerState.targetDistance <= lockOnRange)
+            if (playerState.targetDistance <= playerData.stats.lockOnRange)
             {
                 playerState.isLockedOn = true;
                 playerState.animator.SetBool("isLockedOn", true);
@@ -122,15 +117,15 @@ public class PlayerAttack : MonoBehaviour, IDamageable
             return;
         }
 
-        if (playerState.targetDistance <= attackRange)
+        if (playerState.targetDistance <= playerData.stats.attackRange)
         {
             playerState.isAttacking = true;
-            playerState.animator.SetTrigger("Attack");
+            ExecuteAttack();
         }
         else
         {
             playerState.isAttacking = false;
-            hitbox.SetActive(false);
+            DisableHitbox();
         }
     }
 
@@ -139,29 +134,36 @@ public class PlayerAttack : MonoBehaviour, IDamageable
         this.enemies = enemies;
     }
 
-    public void EnableHitbox()
+    public virtual void EnableHitbox()
     {
-        hitbox.SetActive(true);
+
     }
 
-    public void DisableHitbox()
+    public virtual void DisableHitbox()
     {
-        hitbox.SetActive(false);
+
     }
 
     private void OnDrawGizmosSelected()
     {
+        if (playerData == null) return;
+
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, lockOnRange);
+        Gizmos.DrawWireSphere(transform.position, playerData.stats.lockOnRange);
 
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.DrawWireSphere(transform.position, playerData.stats.attackRange);
 
         if (playerState == null || playerState.targetEnemy == null)
             return;
 
         Gizmos.color = Color.yellow;
         Gizmos.DrawLine(transform.position, playerState.targetEnemy.transform.position);
+    }
+
+    public virtual void ExecuteAttack()
+    {
+        playerState.animator.SetTrigger("Attack");
     }
 
     public void TakeDamage(float damage)
@@ -174,10 +176,10 @@ public class PlayerAttack : MonoBehaviour, IDamageable
         playerState.isHit = true;
         hitCooldown = 0.1f;
 
-        hp -= damage;
+        HP -= damage;
         InGameUIManager.Instance.ShowDamageEffect();
 
-        if (hp <= 0)
+        if (HP <= 0)
         {
             playerState.ChangeState(playerState.deadState);
         }

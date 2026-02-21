@@ -2,16 +2,16 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.InputSystem;
 
-public class PlayerDash : MonoBehaviour
+public class PlayerDash : MonoBehaviour, IBattleComponent
 {
     // 참조
     private PlayerStateManager playerState;
-    [SerializeField] private DodgeDetector dodgeDetector;
+    private DodgeDetector dodgeDetector;
 
     // 대쉬 설정
     [SerializeField] private float dashDuration = 0.4f;
     [SerializeField] private float chargeTime = 2f;
-    [SerializeField] private float reuseCooldown = 0.5f;
+    [SerializeField] private float reuseCooldown = 0.8f;
     public float dashSpeed = 8f;
 
     // 대쉬 스택
@@ -33,6 +33,7 @@ public class PlayerDash : MonoBehaviour
     private void Awake()
     {
         playerState = GetComponent<PlayerStateManager>();
+        dodgeDetector = GetComponentInChildren<DodgeDetector>();
     }
 
     private void Update()

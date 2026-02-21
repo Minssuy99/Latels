@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerStateManager : MonoBehaviour
+public class PlayerStateManager : MonoBehaviour, IBattleComponent
 {
     public IState currentState { get; private set; }
 

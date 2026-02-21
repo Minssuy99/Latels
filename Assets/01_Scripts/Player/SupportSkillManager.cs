@@ -2,20 +2,28 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.InputSystem;
 
-public class SupportSkillManager : MonoBehaviour
+public class SupportSlot
 {
-    /* 지원캐릭터 1 설정 */
-    private GameObject SubCharacter1;
-    public float SubSkill_1_CoolTime = 15f;
-    public float remain_SubSkill_1_CoolTime;
-    private bool canSubSkill_1 = true;
+    public GameObject characterObj;
+    public SupportCharacter support;
+    public float coolTime;
+    public float remainTime;
+    public bool canUse;
+}
 
+public class SupportSkillManager : MonoBehaviour, ISkillComponent
+{
     private PlayerStateManager player;
-    private SupportCharacter support1;
+    private SupportSlot[] slots = new SupportSlot[2];
 
     private void Awake()
     {
         player = GetComponent<PlayerStateManager>();
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            slots[i] = new SupportSlot();
+        }
     }
 
     private void Start()
@@ -25,41 +33,69 @@ public class SupportSkillManager : MonoBehaviour
 
     private void Update()
     {
-        if (canSubSkill_1 == false)
+        foreach (SupportSlot slot in slots)
         {
-            remain_SubSkill_1_CoolTime -= TimeManager.Instance.PlayerDelta;
-
-            if (remain_SubSkill_1_CoolTime <= 0)
-                canSubSkill_1 = true;
+            if (!slot.canUse)
+            {
+                slot.remainTime -= TimeManager.Instance.PlayerDelta;
+                if (slot.remainTime <= 0)
+                {
+                    slot.canUse = true;
+                }
+            }
         }
+    }
+
+    private void ActivateSupport(int index)
+    {
+        SupportSlot slot = slots[index];
+
+        if (player.IsDead) return;
+        if (!slot.canUse) return;
+        if (player.attack.GetEnemies().Count == 0) return;
+
+        slot.canUse = false;
+        slot.remainTime = slot.coolTime;
+
+        slot.characterObj.transform.position = player.transform.position;
+        slot.characterObj.SetActive(true);
+        slot.support.Initialize(player.attack.GetEnemies());
     }
 
     public void OnSubSkill_1(InputValue value)
     {
-        if (player.IsDead) return;
-        if (!canSubSkill_1) return;
-        if (player.attack.GetEnemies().Count == 0) return;
-
-        canSubSkill_1 = false;
-        remain_SubSkill_1_CoolTime = SubSkill_1_CoolTime;
-
-        SubCharacter1.transform.position = player.transform.position;
-        SubCharacter1.SetActive(true);
-        support1.Initialize(player.attack.GetEnemies());
+        ActivateSupport(0);
+    }
+    public void OnSubSkill_2(InputValue value)
+    {
+        ActivateSupport(1);
     }
 
     IEnumerator Warmup()
     {
         yield return null;
-        if (SubCharacter1 == null) yield break;
-        SubCharacter1.SetActive(true);
+        foreach (SupportSlot slot in slots)
+        {
+            if (slot.characterObj == null) continue;
+            slot.characterObj.SetActive(true);
+        }
+
         yield return null;
-        SubCharacter1.SetActive(false);
+        foreach (SupportSlot slot in slots)
+        {
+            if (slot.characterObj == null) continue;
+            slot.characterObj.SetActive(false);
+        }
     }
 
-    public void SetSupport(GameObject support)
+    public void SetSupport(int index, GameObject support)
     {
-        SubCharacter1 = support;
-        support1 = support.GetComponent<SupportCharacter>();
+        slots[index].characterObj = support;
+        slots[index].support = support.GetComponent<SupportCharacter>();
+    }
+
+    public float GetRemainTime(int index)
+    {
+        return slots[index].remainTime;
     }
 }

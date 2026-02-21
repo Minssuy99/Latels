@@ -1,14 +1,14 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviour, IBattleComponent
 {
     private PlayerStateManager playerState;
 
     // 이동 설정
-    [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float SprintSpeed = 7f;
-    [SerializeField] private float rotationSpeed = 20f;
+    [SerializeField] private float moveSpeed = 4.5f;
+    [SerializeField] private float SprintSpeed = 6f;
+    [SerializeField] private float rotationSpeed = 15f;
 
     // 이동 상태
     [HideInInspector] public Vector3 moveDirection;
