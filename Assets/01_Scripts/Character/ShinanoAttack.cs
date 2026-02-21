@@ -4,17 +4,12 @@ public class ShinanoAttack : PlayerAttack, IBattleComponent
 {
     [SerializeField] private GameObject hitbox;
 
-    public override void ExecuteAttack()
-    {
-        base.ExecuteAttack();
-    }
-
-    public override void EnableHitbox()
+    public void EnableHitbox()
     {
         hitbox.SetActive(true);
     }
 
-    public override void DisableHitbox()
+    public void DisableHitbox()
     {
         hitbox.SetActive(false);
     }
