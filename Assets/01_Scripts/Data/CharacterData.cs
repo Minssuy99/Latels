@@ -13,6 +13,7 @@ public class CharacterStats
 {
     public float health;
     public float damage;
+    public float skillDamage;
 
     public float lockOnRange;
     public float attackRange;
