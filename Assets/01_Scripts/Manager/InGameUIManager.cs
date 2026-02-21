@@ -9,7 +9,6 @@ public class InGameUIManager : Singleton<InGameUIManager>
     [SerializeField] private float VignetteFadeOutSpeed = 0.5f;
 
     [Header("Player Settings")]
-    private GameObject player;
     [SerializeField] private Image PlayerHP_Filled;
 
     [Header("Dash Settings")]
@@ -24,10 +23,9 @@ public class InGameUIManager : Singleton<InGameUIManager>
     [SerializeField] private Image mainSkill_Img;
     [SerializeField] private Image mainSkill_Line;
     [SerializeField] private TextMeshProUGUI mainSkill_Nbr;
-    private PlayerAttack pa;
-    private PlayerSkill ps;
-    private PlayerDash pd;
-    private SupportSkillManager sp;
+
+
+    private PlayerStateManager player;
 
 
     [Header("Sub Character 1 Skill Settings")]
@@ -54,10 +52,12 @@ public class InGameUIManager : Singleton<InGameUIManager>
 
     private void Update()
     {
+        if (player == null) return;
+
         UpdatePlayerHP();
         UpdateDashUI();
-        UpdateCooldownUI(mainSkill_Bg, mainSkill_Img, mainSkill_Line, mainSkill_Nbr, ps.remainTime);
-        UpdateCooldownUI(sub1_Skill_Bg, sub1_Skill_Img, sub1_Skill_Line, sub1_Skill_Nbr, sp.GetRemainTime(0));
+        UpdateCooldownUI(mainSkill_Bg, mainSkill_Img, mainSkill_Line, mainSkill_Nbr, player.skill.remainTime);
+        UpdateCooldownUI(sub1_Skill_Bg, sub1_Skill_Img, sub1_Skill_Line, sub1_Skill_Nbr, player.supportSkill.GetRemainTime(0));
         UpdateBossHP();
 
         if (damageVignette.alpha > 0)
@@ -68,15 +68,15 @@ public class InGameUIManager : Singleton<InGameUIManager>
 
     private void UpdatePlayerHP()
     {
-        PlayerHP_Filled.fillAmount = pa.HP / pa.MaxHP;
+        PlayerHP_Filled.fillAmount = player.health.HP / player.health.MaxHP;
     }
 
     private void UpdateDashUI()
     {
-        dash_Count.text = pd.CurrentStack.ToString();
-        dash_Filled.fillAmount = pd.ChargeFillAmount;
+        dash_Count.text = player.dash.CurrentStack.ToString();
+        dash_Filled.fillAmount = player.dash.ChargeFillAmount;
 
-        if (pd.IsReuseDelay)
+        if (player.dash.IsReuseDelay)
         {
             Color bg = dash_Bg.color;
             bg.a = 0.4f;
@@ -86,7 +86,7 @@ public class InGameUIManager : Singleton<InGameUIManager>
             ic.a = 0.4f;
             dash_Img.color = ic;
             dash_CanDashText.gameObject.SetActive(true);
-            dash_CanDashText.text = pd.ReuseTimer.ToString("F1");
+            dash_CanDashText.text = player.dash.ReuseTimer.ToString("F1");
         }
         else
         {
@@ -192,12 +192,8 @@ public class InGameUIManager : Singleton<InGameUIManager>
         damageVignette.alpha = 0.15f;
     }
 
-    public void SetPlayer(GameObject player)
+    public void SetPlayer(PlayerStateManager player)
     {
         this.player = player;
-        pa = player.GetComponent<PlayerAttack>();
-        ps = player.GetComponent<PlayerSkill>();
-        pd = player.GetComponent<PlayerDash>();
-        sp = player.GetComponent<SupportSkillManager>();
     }
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 public class PlayerStateManager : MonoBehaviour, IBattleComponent
 {
@@ -11,9 +12,14 @@ public class PlayerStateManager : MonoBehaviour, IBattleComponent
     public PlayerDeadState deadState { get; private set; }
     public PlayerSprintState sprintState { get; private set; }
 
+    public CharacterSetup setup { get; private set; }
+    public CharacterData CharacterData => setup.Data;
+    public PlayerMovement move { get; private set; }
     public PlayerDash dash { get; private set; }
     public PlayerAttack attack  { get; private set; }
-    public PlayerMovement move { get; private set; }
+    public PlayerHealth health  { get; private set; }
+    public PlayerSkill skill { get;  private set; }
+    public SupportSkill supportSkill { get;  private set; }
 
     public bool isHit { get; set; }
     public bool isLockedOn { get; set; }
@@ -26,7 +32,7 @@ public class PlayerStateManager : MonoBehaviour, IBattleComponent
 
     public bool canAttack { get; set; } = true;
 
-    public GameObject targetEnemy { get; set; }
+    public EnemyStateManager targetEnemy { get; set; }
     public float targetDistance { get; set; }
 
     public Animator animator { get; private set; }
@@ -41,9 +47,13 @@ public class PlayerStateManager : MonoBehaviour, IBattleComponent
         deadState = new PlayerDeadState(this);
         sprintState = new PlayerSprintState(this);
 
+        setup = GetComponent<CharacterSetup>();
         move = GetComponent<PlayerMovement>();
-        attack = GetComponent<PlayerAttack>();
         dash = GetComponent<PlayerDash>();
+        attack = GetComponent<PlayerAttack>();
+        health = GetComponent<PlayerHealth>();
+        skill =  GetComponent<PlayerSkill>();
+        supportSkill = GetComponent<SupportSkill>();
 
         animator = GetComponent<Animator>();
         characterController = GetComponent<CharacterController>();
