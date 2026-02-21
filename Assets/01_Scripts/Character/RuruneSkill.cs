@@ -1,21 +1,22 @@
-using System.Collections;
 using UnityEngine;
+using System.Collections;
 
-public class RuruneSkill : SupportCharacter
+public class RuruneSkill : PlayerSkill
 {
     [SerializeField] private float range;
     [SerializeField] private float damage;
 
-    protected override IEnumerator SkillSequence()
+    private IEnumerator SkillSequence()
     {
-        animator.updateMode = AnimatorUpdateMode.UnscaledTime;
+        player.animator.updateMode = AnimatorUpdateMode.UnscaledTime;
         GameObject target1 = FindNearestEnemy(null);
 
         if (target1 != null)
         {
             transform.LookAt(target1.transform);
         }
-        animator.SetTrigger("Kick1");
+        yield return new WaitForSecondsRealtime(0.1f);
+        player.animator.SetTrigger("Kick1");
         yield return new WaitForSecondsRealtime(2.3f);
 
         GameObject target2 = FindNearestEnemy(target1);
@@ -29,33 +30,14 @@ public class RuruneSkill : SupportCharacter
             transform.LookAt(target2.transform);
         }
 
-        animator.SetTrigger("Kick2");
-        yield return new WaitForSecondsRealtime(3.5f);
-        animator.updateMode = AnimatorUpdateMode.Normal;
-    }
-
-    private GameObject FindNearestEnemy(GameObject exclude)
-    {
-        float nearest = Mathf.Infinity;
-        float dist;
-        EnemyStateManager target = null;
-
-        for (int i = enemies.Count - 1; i >= 0; i--)
+        if (target2 == null)
         {
-            if (enemies[i] == null) continue;
-            if (enemies[i].gameObject == exclude) continue;
-
-            dist = Vector3.Distance(transform.position, enemies[i].transform.position);
-
-            if (dist < nearest)
-            {
-                nearest = dist;
-                target = enemies[i];
-            }
+            player.animator.updateMode = AnimatorUpdateMode.Normal;
+            yield break;
         }
-
-        if (target == null) return null;
-        return target.gameObject;
+        player.animator.SetTrigger("Kick2");
+        yield return new WaitForSecondsRealtime(3.5f);
+        player.animator.updateMode = AnimatorUpdateMode.Normal;
     }
 
     public void Rurune_Attack()
@@ -73,5 +55,18 @@ public class RuruneSkill : SupportCharacter
                 enemies[i].attack.TakeDamage(damage);
             }
         }
+    }
+
+    public override void OnSkillStart()
+    {
+        base.OnSkillStart();
+        StartCoroutine(Run());
+    }
+
+    private IEnumerator Run()
+    {
+        yield return StartCoroutine(SkillSequence());
+        if(player.setup.Role == CharacterRole.Support)
+            gameObject.SetActive(false);
     }
 }

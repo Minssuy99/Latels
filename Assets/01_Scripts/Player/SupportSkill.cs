@@ -5,13 +5,13 @@ using UnityEngine.InputSystem;
 public class SupportSlot
 {
     public GameObject characterObj;
-    public SupportCharacter support;
+    public ISupportSkill support;
     public float coolTime;
     public float remainTime;
     public bool canUse;
 }
 
-public class SupportSkillManager : MonoBehaviour, ISkillComponent
+public class SupportSkill : MonoBehaviour, ISkillComponent
 {
     private PlayerStateManager player;
     private SupportSlot[] slots = new SupportSlot[2];
@@ -57,9 +57,11 @@ public class SupportSkillManager : MonoBehaviour, ISkillComponent
         slot.canUse = false;
         slot.remainTime = slot.coolTime;
 
+        if(slot.characterObj == null) return;
         slot.characterObj.transform.position = player.transform.position;
         slot.characterObj.SetActive(true);
         slot.support.Initialize(player.attack.GetEnemies());
+        slot.support.OnSkillStart();
     }
 
     public void OnSubSkill_1(InputValue value)
@@ -91,7 +93,8 @@ public class SupportSkillManager : MonoBehaviour, ISkillComponent
     public void SetSupport(int index, GameObject support)
     {
         slots[index].characterObj = support;
-        slots[index].support = support.GetComponent<SupportCharacter>();
+        slots[index].support = support.GetComponent<ISupportSkill>();
+        slots[index].coolTime = support.GetComponent<CharacterSetup>().Data.stats.skillCoolTime;
     }
 
     public float GetRemainTime(int index)
