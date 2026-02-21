@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 public class PlayerDash : MonoBehaviour, IBattleComponent
 {
     // 참조
-    private PlayerStateManager playerState;
+    private PlayerStateManager player;
     private DodgeDetector dodgeDetector;
 
     // 대쉬 설정
@@ -32,7 +32,7 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
 
     private void Awake()
     {
-        playerState = GetComponent<PlayerStateManager>();
+        player = GetComponent<PlayerStateManager>();
         dodgeDetector = GetComponentInChildren<DodgeDetector>();
     }
 
@@ -57,30 +57,30 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
 
     public void OnDash(InputValue value)
     {
-        if (playerState.IsDashing) return;
-        if (playerState.IsDead) return;
-        if (playerState.IsUsingSkill) return;
+        if (player.IsDashing) return;
+        if (player.IsDead) return;
+        if (player.IsUsingSkill) return;
         if (currentStack < 1 || reuseTimer > 0) return;
 
-        if (playerState.move.moveDirection.sqrMagnitude > 0f)
+        if (player.move.moveDirection.sqrMagnitude > 0f)
         {
-            dashDirection = playerState.move.moveDirection;
+            dashDirection = player.move.moveDirection;
             transform.rotation = Quaternion.LookRotation(dashDirection);
         }
         else
         {
             dashDirection = transform.forward;
         }
-        bool perfectDodge = dodgeDetector.isEnemyAttackNearby && !playerState.isHit;
+        bool perfectDodge = dodgeDetector.isEnemyAttackNearby && !player.isHit;
 
         if (perfectDodge)
         {
-            TimeManager.Instance.BulletTime(playerState.animator);
+            TimeManager.Instance.BulletTime(player.animator);
         }
 
         currentStack--;
         reuseTimer = reuseCooldown;
-        playerState.ChangeState(playerState.dashState);
+        player.ChangeState(player.dashState);
     }
 
     public IEnumerator DashCoroutine()
@@ -104,21 +104,21 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
         while (moved < dashDistance)
         {
             float step = dashSpeed * TimeManager.Instance.PlayerDelta;
-            playerState.characterController.Move(dashDirection * step);
+            player.characterController.Move(dashDirection * step);
             moved += step;
             yield return null;
         }
 
-        if (playerState.move.moveDirection.sqrMagnitude > 0f)
+        if (player.move.moveDirection.sqrMagnitude > 0f)
         {
-            playerState.ChangeState(playerState.sprintState);
+            player.ChangeState(player.sprintState);
         }
         else
         {
-            playerState.ChangeState(playerState.idleState);
+            player.ChangeState(player.idleState);
         }
 
         yield return new WaitForSecondsRealtime(0.1f);
-        playerState.canAttack = true;
+        player.canAttack = true;
     }
 }

@@ -17,7 +17,7 @@ public class EnemyAttack : MonoBehaviour, IDamageable
     [HideInInspector] public float attackCooldown;
 
     // 피격
-    [SerializeField] private float hitCooldownDuration = 0.1f;
+    [SerializeField] private float hitCooldownDuration = 0.075f;
     [HideInInspector] public int hitCount;
     private float hitCooldown = 0f;
 

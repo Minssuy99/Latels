@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class PlayerMoveState : PlayerBaseState
 {
     public PlayerMoveState(PlayerStateManager player) : base(player)

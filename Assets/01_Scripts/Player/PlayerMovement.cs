@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour, IBattleComponent
 {
-    private PlayerStateManager playerState;
+    private PlayerStateManager player;
 
     // 이동 설정
     [SerializeField] private float moveSpeed = 4.5f;
@@ -25,7 +25,7 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
 
     private void Awake()
     {
-        playerState = GetComponent<PlayerStateManager>();
+        player = GetComponent<PlayerStateManager>();
     }
 
     private void Start()
@@ -35,7 +35,7 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
 
     private void Update()
     {
-        if (playerState.characterController.isGrounded)
+        if (player.characterController.isGrounded)
         {
             groundY = transform.position.y;
         }
@@ -43,14 +43,14 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
 
     private void LateUpdate()
     {
-        if (transform.position.y > groundY + 0.05f && !playerState.characterController.isGrounded)
+        if (transform.position.y > groundY + 0.05f && !player.characterController.isGrounded)
         {
             Vector3 pos = transform.position;
             pos.y = groundY;
 
-            playerState.characterController.enabled = false;
+            player.characterController.enabled = false;
             transform.position = pos;
-            playerState.characterController.enabled = true;
+            player.characterController.enabled = true;
         }
     }
 
@@ -66,17 +66,17 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
         {
             CheckDirection();
             float speed = isRunning ? SprintSpeed : moveSpeed;
-            playerState.characterController.Move(lastDirection * (speed * TimeManager.Instance.PlayerDelta));
+            player.characterController.Move(lastDirection * (speed * TimeManager.Instance.PlayerDelta));
         }
     }
 
     public void HandleRotation()
     {
-        if (playerState.IsDashing) return;
+        if (player.IsDashing) return;
 
-        if (playerState.isLockedOn && playerState.targetEnemy != null)
+        if (player.isLockedOn && player.targetEnemy != null)
         {
-            Vector3 enemyDirection = playerState.targetEnemy.transform.position - transform.position;
+            Vector3 enemyDirection = player.targetEnemy.transform.position - transform.position;
             enemyDirection.y = 0f;
             targetRotation = Quaternion.LookRotation(enemyDirection);
         }
@@ -90,7 +90,7 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
     }
     public void UpdateAnimParameter()
     {
-        if (playerState.isLockedOn)
+        if (player.isLockedOn)
         {
             Vector3 worldInput = moveDirection;
 
@@ -104,22 +104,22 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
             float targetX = localInput.x;
             float targetZ = localInput.z;
 
-            float currentX = playerState.animator.GetFloat("VelocityX");
-            float currentZ = playerState.animator.GetFloat("VelocityZ");
+            float currentX = player.animator.GetFloat("VelocityX");
+            float currentZ = player.animator.GetFloat("VelocityZ");
 
             float smoothTime = 0.1f;
             float smoothX = Mathf.SmoothDamp(currentX, targetX, ref velocityXSmooth, smoothTime, Mathf.Infinity, TimeManager.Instance.PlayerDelta);
             float smoothZ = Mathf.SmoothDamp(currentZ, targetZ, ref velocityZSmooth, smoothTime, Mathf.Infinity, TimeManager.Instance.PlayerDelta);
 
-            playerState.animator.SetFloat("VelocityX", smoothX);
-            playerState.animator.SetFloat("VelocityZ", smoothZ);
-            playerState.animator.SetFloat("Velocity", moveDirection.magnitude);
+            player.animator.SetFloat("VelocityX", smoothX);
+            player.animator.SetFloat("VelocityZ", smoothZ);
+            player.animator.SetFloat("Velocity", moveDirection.magnitude);
         }
         else
         {
-            playerState.animator.SetLayerWeight(1, 0.0f);
-            playerState.animator.SetLayerWeight(2, 0.0f);
-            playerState.animator.SetFloat("Velocity", moveDirection.magnitude);
+            player.animator.SetLayerWeight(1, 0.0f);
+            player.animator.SetLayerWeight(2, 0.0f);
+            player.animator.SetFloat("Velocity", moveDirection.magnitude);
         }
     }
 
