@@ -1,4 +1,3 @@
-using System;
 using TMPro;
 using UnityEngine;
 
@@ -28,7 +27,8 @@ public class CharacterSelectScreen : MonoBehaviour
             {
                 characterName[i].text = GameManager.Instance.characterSlots[i].charName;
                 character[i] = Instantiate(GameManager.Instance.characterSlots[i].Prefab, characterPosition[i].transform);
-                character[i].GetComponent<CharacterSetup>().SetRole(CharacterRole.Display);
+                character[i].name = GameManager.Instance.characterSlots[i].charName;
+                character[i].GetComponent<CharacterSetup>().SetRole(CharacterRole.Display, GameManager.Instance.characterSlots[i]);
             }
         }
     }

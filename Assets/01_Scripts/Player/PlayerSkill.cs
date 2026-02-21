@@ -1,24 +1,20 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
 
-public class PlayerSkill : MonoBehaviour
+public class PlayerSkill : MonoBehaviour, ISkillComponent, ISupportSkill
 {
-    public float skillCoolTime => playerData.stats.skillCoolTime;
+    public float skillCoolTime => player.CharacterData.stats.skillCoolTime;
     public float remainTime;
 
     private bool canUseSkill = true;
 
-    private CharacterData playerData;
-    protected PlayerStateManager playerState;
+    protected PlayerStateManager player;
+    protected List<EnemyStateManager> enemies;
 
     private void Awake()
     {
-        playerState = GetComponent<PlayerStateManager>();
-    }
-
-    private void Start()
-    {
-        playerData = GameManager.Instance.characterSlots[0];
+        player = GetComponent<PlayerStateManager>();
     }
 
     private void Update()
@@ -32,15 +28,51 @@ public class PlayerSkill : MonoBehaviour
         }
     }
 
+    protected GameObject FindNearestEnemy(GameObject exclude)
+    {
+        float nearest = Mathf.Infinity;
+        float dist;
+        EnemyStateManager target = null;
+
+        for (int i = enemies.Count - 1; i >= 0; i--)
+        {
+            if (enemies[i] == null) continue;
+            if (enemies[i].gameObject == exclude) continue;
+
+            dist = Vector3.Distance(transform.position, enemies[i].transform.position);
+
+            if (dist < nearest)
+            {
+                nearest = dist;
+                target = enemies[i];
+            }
+        }
+
+        if (target == null) return null;
+        return target.gameObject;
+    }
+
     public void OnMainSkill(InputValue value)
     {
-        if (playerState.IsUsingSkill) return;
-        if (playerState.IsDead) return;
-        if (playerState.targetEnemy == null) return;
+        if (player.IsUsingSkill) return;
+        if (player.IsDead) return;
+        if (player.targetEnemy == null) return;
         if (canUseSkill == false) return;
 
         canUseSkill = false;
         remainTime = skillCoolTime;
-        playerState.ChangeState(playerState.skillState);
+        player.ChangeState(player.skillState);
+    }
+
+    public void Initialize(List<EnemyStateManager> enemies)
+    {
+        this.enemies = enemies;
+    }
+
+    public virtual void OnSkillStart()
+    {
+        if(enemies == null || enemies.Count == 0)
+            enemies = player.attack.GetEnemies();
+        player.animator.SetTrigger("Skill");
     }
 }

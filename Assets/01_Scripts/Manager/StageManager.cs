@@ -66,21 +66,23 @@ public class StageManager : Singleton<StageManager>
         CharacterData[] slots = GameManager.Instance.characterSlots;
 
         playerObj = Instantiate(slots[0].Prefab, playerSpawn.position, playerSpawn.rotation);
-        playerObj.GetComponent<CharacterSetup>().SetRole(CharacterRole.Main);
+        playerObj.GetComponent<CharacterSetup>().SetRole(CharacterRole.Main, slots[0]);
+        playerObj.name = $"메인 : {slots[0].charName}";
         playerObj.tag = "Player";
-        Instantiate(slots[0].Prefab, clearPlace.characterPosition[0]).GetComponent<CharacterSetup>().SetRole(CharacterRole.Display);
+        Instantiate(slots[0].Prefab, clearPlace.characterPosition[0]).GetComponent<CharacterSetup>().SetRole(CharacterRole.Display, slots[0]);
 
-        InGameUIManager.Instance.SetPlayer(playerObj);
+        InGameUIManager.Instance.SetPlayer(playerObj.GetComponent<PlayerStateManager>());
         playerInput = playerObj.GetComponent<PlayerInput>();
 
         for (int i = 1; i < slots.Length; i++)
         {
             if (slots[i] == null) continue;
 
-            Instantiate(slots[i].Prefab, clearPlace.characterPosition[i]).GetComponent<CharacterSetup>().SetRole(CharacterRole.Display);
+            Instantiate(slots[i].Prefab, clearPlace.characterPosition[i]).GetComponent<CharacterSetup>().SetRole(CharacterRole.Display, slots[i]);
             GameObject supportObj = Instantiate(slots[i].Prefab);
-            supportObj.GetComponent<CharacterSetup>().SetRole(CharacterRole.Support);
-            playerObj.GetComponent<SupportSkillManager>().SetSupport(i - 1, supportObj);
+            supportObj.name = $"지원 : {slots[i].charName}";
+            supportObj.GetComponent<CharacterSetup>().SetRole(CharacterRole.Support, slots[i]);
+            playerObj.GetComponent<SupportSkill>().SetSupport(i - 1, supportObj);
             supportObj.SetActive(false);
         }
     }

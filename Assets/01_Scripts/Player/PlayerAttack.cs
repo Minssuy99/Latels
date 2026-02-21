@@ -1,65 +1,37 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class PlayerAttack : MonoBehaviour, IDamageable
+public class PlayerAttack : MonoBehaviour
 {
-    private float hitCooldown = 0f;
-
     private List<EnemyStateManager> enemies = new List<EnemyStateManager>();
     public List<EnemyStateManager> GetEnemies() => enemies;
-    public float HP { get; private set; }
-    public float MaxHP => playerData.stats.health;
 
-    private PlayerStateManager playerState;
-    private CharacterData playerData;
+    protected PlayerStateManager player;
 
     private void Awake()
     {
-        playerState = GetComponent<PlayerStateManager>();
-    }
-
-    private void Start()
-    {
-        playerData = GameManager.Instance.characterSlots[0];
-        HP = playerData.stats.health;
+        player = GetComponent<PlayerStateManager>();
     }
 
     private void Update()
     {
-        if (hitCooldown > 0)
-        {
-            hitCooldown -= TimeManager.Instance.PlayerDelta;
-            if (hitCooldown <= 0)
-                playerState.isHit = false;
-        }
-        if (playerState.IsSprinting) return;
-        if (playerState.IsDashing) return;
-        if (!playerState.canAttack) return;
-        if (playerState.IsUsingSkill) return;
+        if (player.IsSprinting) return;
+        if (player.IsDashing) return;
+        if (!player.canAttack) return;
+        if (player.IsUsingSkill) return;
 
-        playerState.targetDistance = SelectNearestEnemy();
+        player.targetDistance = SelectNearestEnemy();
 
         UpdateLockOn();
         UpdateAttack();
-
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (playerState.IsDead) return;
-
-        if (other.CompareTag("EnemyHitbox"))
-        {
-            TakeDamage(5);
-        }
     }
 
     private float SelectNearestEnemy()
     {
-        if (playerState == null) return Mathf.Infinity;
+        if (player == null) return Mathf.Infinity;
 
         float targetDistance = Mathf.Infinity;
-        playerState.targetEnemy = null;
+        player.targetEnemy = null;
         if (enemies.Count > 0)
         {
             foreach (EnemyStateManager enemy in enemies)
@@ -71,61 +43,60 @@ public class PlayerAttack : MonoBehaviour, IDamageable
                 if (distance < targetDistance)
                 {
                     targetDistance = distance;
-                    playerState.targetEnemy = enemy.gameObject;
+                    player.targetEnemy = enemy;
                 }
             }
         }
         else
         {
-            playerState.targetEnemy = null;
-            DisableHitbox();
+            player.targetEnemy = null;
         }
+
         return targetDistance;
     }
 
     private void UpdateLockOn()
     {
-        if (playerState.targetEnemy != null)
+        if (player.targetEnemy != null)
         {
-            if (playerState.targetDistance <= playerData.stats.lockOnRange)
+            if (player.targetDistance <= player.CharacterData.stats.lockOnRange)
             {
-                playerState.isLockedOn = true;
-                playerState.animator.SetBool("isLockedOn", true);
+                player.isLockedOn = true;
+                player.animator.SetBool("isLockedOn", true);
             }
             else
             {
-                if (playerState.isLockedOn)
+                if (player.isLockedOn)
                 {
-                    playerState.animator.SetBool("isLockedOn", false);
-                    playerState.isLockedOn = false;
+                    player.animator.SetBool("isLockedOn", false);
+                    player.isLockedOn = false;
                 }
             }
         }
         else
         {
-            playerState.isLockedOn = false;
-            playerState.animator.SetBool("isLockedOn", false);
+            player.isLockedOn = false;
+            player.animator.SetBool("isLockedOn", false);
         }
     }
 
     private void UpdateAttack()
     {
-        if (!playerState.targetEnemy)
+        if (!player.targetEnemy)
         {
-            playerState.animator.ResetTrigger("Attack");
-            playerState.isAttacking = false;
+            player.animator.ResetTrigger("Attack");
+            player.isAttacking = false;
             return;
         }
 
-        if (playerState.targetDistance <= playerData.stats.attackRange)
+        if (player.targetDistance <= player.CharacterData.stats.attackRange)
         {
-            playerState.isAttacking = true;
+            player.isAttacking = true;
             ExecuteAttack();
         }
         else
         {
-            playerState.isAttacking = false;
-            DisableHitbox();
+            player.isAttacking = false;
         }
     }
 
@@ -134,54 +105,25 @@ public class PlayerAttack : MonoBehaviour, IDamageable
         this.enemies = enemies;
     }
 
-    public virtual void EnableHitbox()
-    {
-
-    }
-
-    public virtual void DisableHitbox()
-    {
-
-    }
-
     private void OnDrawGizmosSelected()
     {
-        if (playerData == null) return;
+        if (player.CharacterData == null) return;
 
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, playerData.stats.lockOnRange);
+        Gizmos.DrawWireSphere(transform.position, player.CharacterData.stats.lockOnRange);
 
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, playerData.stats.attackRange);
+        Gizmos.DrawWireSphere(transform.position, player.CharacterData.stats.attackRange);
 
-        if (playerState == null || playerState.targetEnemy == null)
+        if (player == null || player.targetEnemy == null)
             return;
 
         Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(transform.position, playerState.targetEnemy.transform.position);
+        Gizmos.DrawLine(transform.position, player.targetEnemy.transform.position);
     }
 
     public virtual void ExecuteAttack()
     {
-        playerState.animator.SetTrigger("Attack");
-    }
-
-    public void TakeDamage(float damage)
-    {
-        if (playerState.IsDashing) return;
-        if (playerState.IsUsingSkill) return;
-        if (playerState.isInvincible) return;
-
-        if (hitCooldown > 0) return;
-        playerState.isHit = true;
-        hitCooldown = 0.1f;
-
-        HP -= damage;
-        InGameUIManager.Instance.ShowDamageEffect();
-
-        if (HP <= 0)
-        {
-            playerState.ChangeState(playerState.deadState);
-        }
+        player.animator.SetTrigger("Attack");
     }
 }
