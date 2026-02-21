@@ -4,18 +4,10 @@ using UnityEngine;
 
 public class CharacterSelectScreen : MonoBehaviour
 {
-    [SerializeField] private TMP_Text mainCharName;
-    [SerializeField] private TMP_Text subChar1Name;
-    [SerializeField] private TMP_Text subChar2Name;
+    [SerializeField] private TMP_Text[] characterName;
+    [SerializeField] private GameObject[] characterPosition;
 
-    [SerializeField] private GameObject mainCharPos;
-    [SerializeField] private GameObject subChar1Pos;
-    [SerializeField] private GameObject subChar2Pos;
-
-    private GameObject mainChar;
-    private GameObject subChar1;
-    private GameObject subChar2;
-
+    private GameObject[] character = new GameObject[3];
     private Camera cam;
 
     private void Awake()
@@ -28,15 +20,16 @@ public class CharacterSelectScreen : MonoBehaviour
         float aspect = (float)Screen.width / Screen.height;
         cam.fieldOfView = Mathf.Lerp(60, 50, Mathf.InverseLerp(1.33f, 2.17f, aspect));
 
-        if (mainChar == null)
+        for (int i = 0; i < GameManager.Instance.characterSlots.Length; i++)
         {
-            mainChar = Instantiate(GameManager.Instance.mainCharData.displayPrefab, mainCharPos.transform);
-            subChar1 = Instantiate(GameManager.Instance.supportChar1_Data.displayPrefab, subChar1Pos.transform);
-            //subChar2 = Instantiate(GameManager.Instance.supportChar2_Data.displayPrefab, subChar2Pos.transform);
+            if (GameManager.Instance.characterSlots[i] == null) continue;
 
-            mainCharName.text = GameManager.Instance.mainCharData.characterName;
-            subChar1Name.text = GameManager.Instance.supportChar1_Data.characterName;
-            //subChar2Name.text = GameManager.Instance.supportChar2_Data.characterName;
+            if (character[i] == null)
+            {
+                characterName[i].text = GameManager.Instance.characterSlots[i].charName;
+                character[i] = Instantiate(GameManager.Instance.characterSlots[i].Prefab, characterPosition[i].transform);
+                character[i].GetComponent<CharacterSetup>().SetRole(CharacterRole.Display);
+            }
         }
     }
 

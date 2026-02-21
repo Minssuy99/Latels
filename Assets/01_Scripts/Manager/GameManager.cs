@@ -4,11 +4,10 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : Singleton<GameManager>
 {
-    [Header("Prefabs")]
-    public CharacterData mainCharData;
-    public CharacterData supportChar1_Data;
-    public CharacterData supportChar2_Data;
+    [Header("Chracter")]
+    public CharacterData[] characterSlots = new CharacterData[3];
 
+    [Header("Chapter/Stage")]
     public ChapterData chapterData;
     public StageData stageData;
 

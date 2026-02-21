@@ -1,17 +1,31 @@
 using System;
-using Unity.AI.Navigation;
 using UnityEngine;
+using Unity.AI.Navigation;
 using UnityEngine.InputSystem;
 
 public class StageManager : Singleton<StageManager>
 {
+    // 인스펙터
     [SerializeField] private StageClear stageClear;
+
+    // 이벤트
     public event Action OnStageClear;
+
+    // 플레이어
     public PlayerInput PlayerInput => playerInput;
     private PlayerInput playerInput;
+    private GameObject playerObj;
+
+    // 맵
+    private GameObject map;
+    private ClearPlace clearPlace;
+    private Transform playerSpawn;
+    private Area[] areas;
+
+    // 스테이지
+    private StageData stageData;
     private int clearAreaCount = 0;
     private int totalAreaCount = 0;
-
 
     protected override void Awake()
     {
@@ -29,38 +43,51 @@ public class StageManager : Singleton<StageManager>
         }
     }
 
-    private void Init(Area[] areas)
-    {
-        totalAreaCount = areas.Length;
-
-        for (int i = 0; i < areas.Length; i++)
-        {
-            areas[i].OnCleared += OnAreaCleared;
-        }
-    }
-
     private void LoadStage()
     {
-        StageData stageData = GameManager.Instance.stageData;
-        GameObject map = Instantiate(stageData.mapPrefab);
+        stageData = GameManager.Instance.stageData;
+        SpawnMap();
+        SpawnCharacters();
+        SpawnEnemies();
+        InitAreas(areas);
+    }
+
+    private void SpawnMap()
+    {
+        map = Instantiate(stageData.mapPrefab);
         map.GetComponent<NavMeshSurface>().BuildNavMesh();
-
-        ClearPlace clearPlace = map.GetComponentInChildren<ClearPlace>();
-        Instantiate(GameManager.Instance.mainCharData.displayPrefab, clearPlace.mainCharPos.position, clearPlace.mainCharPos.rotation);
-        Instantiate(GameManager.Instance.supportChar1_Data.displayPrefab, clearPlace.subChar1Pos.position, clearPlace.subChar1Pos.rotation);
-
+        clearPlace = map.GetComponentInChildren<ClearPlace>();
         stageClear.SetCameraPoint(clearPlace.cameraPoint, clearPlace.CameraEndPoint);
+        playerSpawn = map.transform.Find("PlayerSpawn");
+    }
 
-        Transform playerSpawn = map.transform.Find("PlayerSpawn");
-        GameObject playerObj = Instantiate(GameManager.Instance.mainCharData.battlePrefab, playerSpawn.position, Quaternion.identity);
+    private void SpawnCharacters()
+    {
+        CharacterData[] slots = GameManager.Instance.characterSlots;
+
+        playerObj = Instantiate(slots[0].Prefab, playerSpawn.position, playerSpawn.rotation);
+        playerObj.GetComponent<CharacterSetup>().SetRole(CharacterRole.Main);
+        playerObj.tag = "Player";
+        Instantiate(slots[0].Prefab, clearPlace.characterPosition[0]).GetComponent<CharacterSetup>().SetRole(CharacterRole.Display);
+
         InGameUIManager.Instance.SetPlayer(playerObj);
         playerInput = playerObj.GetComponent<PlayerInput>();
 
-        GameObject supportObj = Instantiate(GameManager.Instance.supportChar1_Data.battlePrefab);
-        supportObj.SetActive(false);
-        playerObj.GetComponent<SupportSkillManager>().SetSupport(supportObj);
+        for (int i = 1; i < slots.Length; i++)
+        {
+            if (slots[i] == null) continue;
 
-        Area[] areas = map.GetComponentsInChildren<Area>();
+            Instantiate(slots[i].Prefab, clearPlace.characterPosition[i]).GetComponent<CharacterSetup>().SetRole(CharacterRole.Display);
+            GameObject supportObj = Instantiate(slots[i].Prefab);
+            supportObj.GetComponent<CharacterSetup>().SetRole(CharacterRole.Support);
+            playerObj.GetComponent<SupportSkillManager>().SetSupport(i - 1, supportObj);
+            supportObj.SetActive(false);
+        }
+    }
+
+    private void SpawnEnemies()
+    {
+        areas = map.GetComponentsInChildren<Area>();
 
         for (int i = 0; i < areas.Length; i++)
         {
@@ -83,6 +110,15 @@ public class StageManager : Singleton<StageManager>
                 areas[i].SetBoss(enemy.GetComponent<EnemyAttack>());
             }
         }
-        Init(areas);
+    }
+
+    private void InitAreas(Area[] areas)
+    {
+        totalAreaCount = areas.Length;
+
+        for (int i = 0; i < areas.Length; i++)
+        {
+            areas[i].OnCleared += OnAreaCleared;
+        }
     }
 }

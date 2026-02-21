@@ -3,7 +3,19 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Character", menuName = "SO/CharacterData")]
 public class CharacterData : ScriptableObject
 {
-    public string characterName;
-    public GameObject battlePrefab;
-    public GameObject displayPrefab;
+    public string charName;
+    public GameObject Prefab;
+    public CharacterStats stats;
+}
+
+[System.Serializable]
+public class CharacterStats
+{
+    public float health;
+    public float damage;
+
+    public float lockOnRange;
+    public float attackRange;
+
+    public float skillCoolTime;
 }

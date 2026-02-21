@@ -57,7 +57,7 @@ public class InGameUIManager : Singleton<InGameUIManager>
         UpdatePlayerHP();
         UpdateDashUI();
         UpdateCooldownUI(mainSkill_Bg, mainSkill_Img, mainSkill_Line, mainSkill_Nbr, ps.remainTime);
-        UpdateCooldownUI(sub1_Skill_Bg, sub1_Skill_Img, sub1_Skill_Line, sub1_Skill_Nbr, sp.remain_SubSkill_1_CoolTime);
+        UpdateCooldownUI(sub1_Skill_Bg, sub1_Skill_Img, sub1_Skill_Line, sub1_Skill_Nbr, sp.GetRemainTime(0));
         UpdateBossHP();
 
         if (damageVignette.alpha > 0)
