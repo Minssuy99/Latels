@@ -6,6 +6,7 @@ public class EnemyStateManager : MonoBehaviour
 {
     public IState currentState { get; private set; } = null;
 
+    public EnemyData Data { get; private set; }
     public EnemyAttack attack { get; private set; }
 
     public EnemyInactiveState inactiveState { get; private set; }
@@ -70,6 +71,13 @@ public class EnemyStateManager : MonoBehaviour
         }
         currentState = newState;
         currentState.Enter();
+    }
+
+    public void SetData(EnemyData data)
+    {
+        Data = data;
+        agent.speed = Data.stats.moveSpeed;
+        agent.stoppingDistance = Data.stats.attackRange;
     }
 
     public void Activate(Area area)

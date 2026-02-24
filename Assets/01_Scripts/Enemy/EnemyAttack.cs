@@ -3,12 +3,10 @@ using Random = UnityEngine.Random;
 
 public class EnemyAttack : MonoBehaviour, IDamageable
 {
-    [SerializeField] private float hp = 100f;
-    private float maxHP;
-    public float HP => hp;
-    public float MaxHP => maxHP;
+    public float HP { get; private set; }
+    public float MaxHP => enemy.Data.stats.health;
 
-    private EnemyStateManager enemyState;
+    private EnemyStateManager enemy;
     [HideInInspector] public CapsuleCollider capsuleCollider;
 
     // 전투 설정
@@ -33,14 +31,14 @@ public class EnemyAttack : MonoBehaviour, IDamageable
     private void Awake()
     {
         capsuleCollider = GetComponent<CapsuleCollider>();
-        enemyState = GetComponent<EnemyStateManager>();
+        enemy = GetComponent<EnemyStateManager>();
         hitEffect = GetComponent<EnemyHitEffect>();
     }
 
     private void Start()
     {
-        attackCooldown = Random.Range(1, 3);
-        maxHP = hp;
+        attackCooldown = enemy.Data.stats.attackCooldown;
+        HP = MaxHP;
     }
 
     private void Update()
@@ -55,12 +53,13 @@ public class EnemyAttack : MonoBehaviour, IDamageable
     {
         if (!other.CompareTag("PlayerHitbox")) return;
 
-        TakeDamage(5);
+        CharacterSetup setup = other.gameObject.GetComponentInParent<CharacterSetup>();
+        TakeDamage(setup.Data.stats.damage);
     }
 
     private void InterruptAttack()
     {
-        enemyState.ChangeState(enemyState.hitState);
+        enemy.ChangeState(enemy.hitState);
     }
 
     public void DisableAllHitboxes()
@@ -142,12 +141,12 @@ public class EnemyAttack : MonoBehaviour, IDamageable
         if (hitCooldown > 0) return;
 
         hitEffect.HitFlash();
-        hp -= damage;
+        HP -= damage;
         hitCooldown = hitCooldownDuration;
 
-        if (hp <= 0)
+        if (HP <= 0)
         {
-            enemyState.ChangeState(enemyState.deadState);
+            enemy.ChangeState(enemy.deadState);
             return;
         }
 
@@ -157,7 +156,7 @@ public class EnemyAttack : MonoBehaviour, IDamageable
             return;
         }
 
-        if (enemyState.playerState.IsUsingSkill)
+        if (enemy.playerState.IsUsingSkill)
         {
             DisableAllHitboxes();
             return;
@@ -168,9 +167,9 @@ public class EnemyAttack : MonoBehaviour, IDamageable
             return;
         }
 
-        if (enemyState.currentState is EnemyAttackState)
+        if (enemy.currentState is EnemyAttackState)
         {
-            if (hitCount >= 3)
+            if (hitCount >= enemy.Data.stats.superArmorCount)
             {
                 hitCount = 0;
                 superArmor = true;

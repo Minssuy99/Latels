@@ -5,9 +5,8 @@ using UnityEngine;
 public class Area : MonoBehaviour
 {
     [SerializeField] private GameObject door;
-    [SerializeField] private EnemyAttack boss;
-    public Transform[] spawnPoints;
-    public Transform bossSpawnPoint;
+    private EnemyStateManager boss;
+    public SpawnPoint[] spawnPoints;
 
     public Action OnCleared;
 
@@ -33,7 +32,7 @@ public class Area : MonoBehaviour
             playerAttack.SetEnemies(enemies);
 
             if(boss != null)
-                InGameUIManager.Instance.ShowBossHP(boss);
+                InGameUIManager.Instance.ShowBossHP(boss.attack);
 
             foreach(EnemyStateManager enemy in enemies)
             {
@@ -61,7 +60,7 @@ public class Area : MonoBehaviour
         }
     }
 
-    public void SetBoss(EnemyAttack boss)
+    public void SetBoss(EnemyStateManager boss)
     {
         this.boss = boss;
     }

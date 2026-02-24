@@ -53,7 +53,8 @@ public class PlayerHealth : MonoBehaviour, IDamageable, IBattleComponent
 
         if (other.CompareTag("EnemyHitbox"))
         {
-            TakeDamage(5);
+            EnemyStateManager enemy = other.GetComponentInParent<EnemyStateManager>();
+            TakeDamage(enemy.Data.stats.damage);
         }
     }
 }
