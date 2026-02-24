@@ -86,6 +86,7 @@ public class StageClear : MonoBehaviour
         Camera.main.GetComponent<FollowCamera>().enabled = false;
         Camera.main.transform.position = startPoint.position;
         Camera.main.transform.rotation = startPoint.rotation;
+        Camera.main.fieldOfView = 30f;
 
         doorLeft.DOAnchorPosX(-doorLeft.rect.width, duration);
         doorRight.DOAnchorPosX(doorRight.rect.width, duration);
@@ -95,6 +96,6 @@ public class StageClear : MonoBehaviour
         Camera.main.transform.DORotate(endPoint.rotation.eulerAngles, 0.7f);
         yield return new WaitForSecondsRealtime(1.5f);
 
-        victoryUI.Show("The Latels of the Cataclysm", 4635, 6000);
+        victoryUI.Show(GameManager.Instance.stageData.stageName, 4635, 6000);
     }
 }

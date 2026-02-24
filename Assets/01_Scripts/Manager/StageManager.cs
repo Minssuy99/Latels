@@ -47,7 +47,8 @@ public class StageManager : Singleton<StageManager>
     {
         stageData = GameManager.Instance.stageData;
         SpawnMap();
-        SpawnCharacters();
+        SpawnBattleCharacters();
+        SpawnDisplayCharacters();
         SpawnEnemies();
         InitAreas(areas);
     }
@@ -58,58 +59,67 @@ public class StageManager : Singleton<StageManager>
         map.GetComponent<NavMeshSurface>().BuildNavMesh();
         clearPlace = map.GetComponentInChildren<ClearPlace>();
         stageClear.SetCameraPoint(clearPlace.cameraPoint, clearPlace.CameraEndPoint);
+        Camera.main.fieldOfView = 60f;
         playerSpawn = map.transform.Find("PlayerSpawn");
     }
 
-    private void SpawnCharacters()
+    private void SpawnBattleCharacters()
     {
         CharacterData[] slots = GameManager.Instance.characterSlots;
+        Transform battleRoot = new GameObject("캐릭터").transform;
 
-        playerObj = Instantiate(slots[0].Prefab, playerSpawn.position, playerSpawn.rotation);
+        playerObj = Instantiate(slots[0].prefab, playerSpawn.position, playerSpawn.rotation);
         playerObj.GetComponent<CharacterSetup>().SetRole(CharacterRole.Main, slots[0]);
-        playerObj.name = $"메인 : {slots[0].charName}";
-        playerObj.tag = "Player";
-        Instantiate(slots[0].Prefab, clearPlace.characterPosition[0]).GetComponent<CharacterSetup>().SetRole(CharacterRole.Display, slots[0]);
-
         InGameUIManager.Instance.SetPlayer(playerObj.GetComponent<PlayerStateManager>());
         playerInput = playerObj.GetComponent<PlayerInput>();
+        playerObj.transform.SetParent(battleRoot, true);
+        playerObj.name = $"메인: {slots[0].charName}";
+        playerObj.tag = "Player";
 
         for (int i = 1; i < slots.Length; i++)
         {
             if (slots[i] == null) continue;
 
-            Instantiate(slots[i].Prefab, clearPlace.characterPosition[i]).GetComponent<CharacterSetup>().SetRole(CharacterRole.Display, slots[i]);
-            GameObject supportObj = Instantiate(slots[i].Prefab);
-            supportObj.name = $"지원 : {slots[i].charName}";
+            GameObject supportObj = Instantiate(slots[i].prefab, battleRoot, true);
+            supportObj.name = $"지원: {slots[i].charName}";
             supportObj.GetComponent<CharacterSetup>().SetRole(CharacterRole.Support, slots[i]);
             playerObj.GetComponent<SupportSkill>().SetSupport(i - 1, supportObj);
             supportObj.SetActive(false);
         }
     }
 
+    private void SpawnDisplayCharacters()
+    {
+        CharacterData[] slots = GameManager.Instance.characterSlots;
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] == null) continue;
+
+            Instantiate(slots[i].prefab, clearPlace.characterPosition[i]).GetComponent<CharacterSetup>().SetRole(CharacterRole.Display, slots[i]);
+        }
+    }
+
     private void SpawnEnemies()
     {
         areas = map.GetComponentsInChildren<Area>();
+        Transform enemyRoot = new GameObject("몬스터").transform;
 
-        for (int i = 0; i < areas.Length; i++)
+        foreach (Area area in areas)
         {
-            GameObject enemy;
-            AreaSpawnData spawnData = stageData.areas[i];
-
-            for (int j = 0; j < areas[i].spawnPoints.Length; j++)
+            foreach (SpawnPoint point in area.spawnPoints)
             {
-                enemy = Instantiate(spawnData.enemyPrefab, areas[i].spawnPoints[j].position, Quaternion.identity);
-                EnemyStateManager enemyStateManager = enemy.GetComponent<EnemyStateManager>();
-                areas[i].AddEnemy(enemyStateManager);
-            }
-
-            if (spawnData.bossPrefab != null)
-            {
-                enemy = Instantiate(spawnData.bossPrefab, areas[i].bossSpawnPoint.position, Quaternion.identity);
-
-                EnemyStateManager boss = enemy.GetComponent<EnemyStateManager>();
-                areas[i].AddEnemy(boss);
-                areas[i].SetBoss(enemy.GetComponent<EnemyAttack>());
+                GameObject enemyObj = Instantiate(point.Data.prefab, point.transform.position, point.transform.rotation);
+                enemyObj.transform.SetParent(enemyRoot, true);
+                EnemyStateManager enemy = enemyObj.GetComponent<EnemyStateManager>();
+                enemy.SetData(point.Data);
+                enemy.gameObject.name = point.Data.EnemyName;
+                area.AddEnemy(enemy);
+                if (point.IsBoss)
+                {
+                    enemy.gameObject.name = $"보스: {point.Data.EnemyName}";
+                    area.SetBoss(enemy);
+                }
             }
         }
     }
