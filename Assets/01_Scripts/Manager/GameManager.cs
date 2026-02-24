@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : Singleton<GameManager>
 {
-    [Header("Chracter")]
+    [Header("Character")]
     public CharacterData[] characterSlots = new CharacterData[3];
 
     [Header("Chapter/Stage")]

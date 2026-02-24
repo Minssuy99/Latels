@@ -1,36 +1,78 @@
+using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using DG.Tweening;
+using UnityEngine.UI;
 
 public class CharacterSelectScreen : MonoBehaviour
 {
+    [SerializeField] private Transform camDefaultPos;
+    [SerializeField] private Transform camPanelPos;
+
+    [SerializeField] private GameObject startButton;
+    [SerializeField] private GameObject confirmButton;
+    [SerializeField] private GameObject backButtonPanel;
+    [SerializeField] private RectTransform characterList;
+
+    [SerializeField] private RectTransform characterPanel;
     [SerializeField] private TMP_Text[] characterName;
     [SerializeField] private GameObject[] characterPosition;
 
+    [Header("Character List Settings")]
+    [SerializeField] private RectTransform pickIndicator;
+    [SerializeField] private RectTransform[] touchPanels;
+    [SerializeField] private CanvasGroup alertCanvasGroup;
+    private Tweener pickRotation;
+
+
+    [SerializeField] private GameObject listItemPrefab;
+    [SerializeField] private Transform listContent;
+    [SerializeField] private GameObject[] nameTags;
+    [SerializeField] private GameObject[] emptyIcons;
+    private CharacterData[] ownedCharacters;
+    private List<CharacterListItem> listItems = new List<CharacterListItem>();
+
+
+
     private GameObject[] character = new GameObject[3];
     private Camera cam;
+    private bool isPanelOpen = false;
+    private float defaultFOV;
+    private ScrollRect characterListScroll;
+    private int selectedSlotIndex = -1;
 
     private void Awake()
     {
         cam = Camera.main;
+        characterListScroll = GetComponentInChildren<ScrollRect>();
+        ownedCharacters = Resources.LoadAll<CharacterData>("Characters");
+        alertCanvasGroup.alpha = 0;
     }
 
     private void OnEnable()
     {
+        isPanelOpen = false;
+        pickIndicator.gameObject.SetActive(false);
+
+        cam.transform.position = camDefaultPos.position;
+        characterPanel.DOAnchorPosX(0, 0.25f);
+        characterPanel.DOScale(new Vector3(1f, 1f), 0.25f);
+
         float aspect = (float)Screen.width / Screen.height;
-        cam.fieldOfView = Mathf.Lerp(60, 50, Mathf.InverseLerp(1.33f, 2.17f, aspect));
+        cam.fieldOfView = Mathf.Lerp(35, 27, Mathf.InverseLerp(1.33f, 2.17f, aspect));
+        defaultFOV = cam.fieldOfView;
 
-        for (int i = 0; i < GameManager.Instance.characterSlots.Length; i++)
-        {
-            if (GameManager.Instance.characterSlots[i] == null) continue;
+        float listWidth = Mathf.Lerp(730, 900, Mathf.InverseLerp(1.33f, 2.17f, aspect));
+        characterList.sizeDelta = new Vector2(listWidth, characterList.sizeDelta.y);
 
-            if (character[i] == null)
-            {
-                characterName[i].text = GameManager.Instance.characterSlots[i].charName;
-                character[i] = Instantiate(GameManager.Instance.characterSlots[i].Prefab, characterPosition[i].transform);
-                character[i].name = GameManager.Instance.characterSlots[i].charName;
-                character[i].GetComponent<CharacterSetup>().SetRole(CharacterRole.Display, GameManager.Instance.characterSlots[i]);
-            }
-        }
+        RefreshCharacterModels();
+
+        startButton.SetActive(true);
+        confirmButton.SetActive(false);
+        characterList.gameObject.SetActive(false);
+        backButtonPanel.gameObject.SetActive(false);
+        characterList.DOAnchorPosX(830f, 0.25f);
     }
 
     public void HideSelectScreen()
@@ -40,6 +82,12 @@ public class CharacterSelectScreen : MonoBehaviour
 
     public void StartGame()
     {
+        if (GameManager.Instance.characterSlots[0] == null)
+        {
+            ShowAlert();
+            return;
+        }
+
         GameManager.Instance.onReturnToLobby = () =>
         {
             LobbyManager.Instance.LobbyScreen.SetActive(true);
@@ -52,11 +100,226 @@ public class CharacterSelectScreen : MonoBehaviour
         }, 1);
     }
 
+    public void ShowCharacterSelectPanel(int index)
+    {
+        selectedSlotIndex = index;
+        UpdatePickIndicator();
+
+        if (isPanelOpen) return;
+        isPanelOpen = true;
+        PopulateList();
+
+        cam.transform.DOMove(camPanelPos.position, 0.25f);
+        cam.transform.DORotate(camPanelPos.rotation.eulerAngles, 0.25f);
+        cam.DOFieldOfView(defaultFOV + 3f, 0.25f);
+
+        characterPanel.DOAnchorPosX(-360, 0.25f);
+        characterPanel.DOScale(new Vector3(0.85f, 0.85f), 0.25f);
+        startButton.SetActive(false);
+        confirmButton.SetActive(true);
+        backButtonPanel.gameObject.SetActive(true);
+        characterList.gameObject.SetActive(true);
+        characterList.DOAnchorPosX(0, 0.25f);
+    }
+
+    public void HideCharacterSelectPanel()
+    {
+        if (pickRotation != null) pickRotation.Kill();
+        pickIndicator.gameObject.SetActive(false);
+
+        isPanelOpen = false;
+        cam.transform.DOMove(camDefaultPos.position, 0.25f);
+        cam.transform.DORotate(camDefaultPos.rotation.eulerAngles, 0.25f);
+        cam.DOFieldOfView(defaultFOV, 0.25f);
+
+        characterPanel.DOAnchorPosX(0, 0.25f);
+        characterPanel.DOScale(new Vector3(1f, 1f), 0.25f);
+        startButton.SetActive(true);
+        confirmButton.SetActive(false);
+        backButtonPanel.gameObject.SetActive(false);
+        characterList.DOAnchorPosX(900f, 0.25f).OnComplete(() =>
+        {
+            characterList.gameObject.SetActive(false);
+        });
+    }
+
     private void DisableSelectScreen()
     {
         LobbyManager.Instance.LobbyScreen.SetActive(true);
         LobbyManager.Instance.chapterScreen.gameObject.SetActive(true);
         LobbyManager.Instance.stageScreen.OpenDirect();
+        characterListScroll.verticalNormalizedPosition = 1;
         LobbyManager.Instance.characterSelectScreen.gameObject.SetActive(false);
     }
+
+    private void PopulateList()
+    {
+        foreach (var item in listItems)
+        {
+            Destroy(item.gameObject);
+        }
+        listItems.Clear();
+
+        CharacterData[] slots = GameManager.Instance.characterSlots;
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] == null) continue;
+            CreateListItem(slots[i], true, i);
+        }
+
+        foreach (CharacterData data in ownedCharacters)
+        {
+            if (Array.Exists(slots, s => s == data)) continue;
+            CreateListItem(data, false);
+        }
+    }
+
+    private void CreateListItem(CharacterData data, bool isSelected, int slotIndex = -1)
+    {
+        GameObject obj = Instantiate(listItemPrefab, listContent);
+        CharacterListItem item = obj.GetComponent<CharacterListItem>();
+        item.Setup(data, OnListItemClicked);
+        item.SetSelected(isSelected, slotIndex == 0 ? "Main" : "Support");
+        listItems.Add(item);
+    }
+
+    private void OnListItemClicked(CharacterData data)
+    {
+        CharacterData[] slots = GameManager.Instance.characterSlots;
+        int existingSlot = Array.IndexOf(slots, data);
+
+        if (existingSlot == selectedSlotIndex)
+        {
+            slots[selectedSlotIndex] = null;
+        }
+        else if (existingSlot >= 0)
+        {
+            slots[existingSlot] = slots[selectedSlotIndex];
+            slots[selectedSlotIndex] = data;
+        }
+        else
+        {
+            slots[selectedSlotIndex] = data;
+        }
+
+        RefreshCharacterModels();
+        RefreshSelectedBadges();
+    }
+
+    private void RefreshCharacterModels()
+    {
+        CharacterData[] slots = GameManager.Instance.characterSlots;
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (character[i] != null)
+            {
+                Destroy(character[i]);
+            }
+
+            if (slots[i] != null)
+            {
+                character[i] = Instantiate(slots[i].prefab, characterPosition[i].transform);
+                character[i].GetComponent<CharacterSetup>().SetRole(CharacterRole.Display, GameManager.Instance.characterSlots[i]);
+                characterName[i].text = slots[i].charName;
+                emptyIcons[i].SetActive(false);
+                nameTags[i].SetActive(true);
+            }
+            else
+            {
+                character[i] = null;
+                characterName[i].text = "";
+                emptyIcons[i].SetActive(true);
+                nameTags[i].SetActive(false);
+            }
+        }
+    }
+
+    private void RefreshSelectedBadges()
+    {
+        CharacterData[] slots = GameManager.Instance.characterSlots;
+        foreach (var item in listItems)
+        {
+            int slotIndex = Array.IndexOf(slots, item.Data);
+
+            if (slotIndex >= 0)
+            {
+                item.SetSelected(true, slotIndex == 0 ? "Main" : "Support");
+            }
+            else
+            {
+                item.SetSelected(false);
+            }
+        }
+    }
+
+    private void UpdatePickIndicator()
+    {
+        pickIndicator.gameObject.SetActive(true);
+        pickIndicator.position = new Vector3(touchPanels[selectedSlotIndex].position.x, pickIndicator.position.y, 0);
+
+        if(pickRotation != null) pickRotation.Kill();
+        pickIndicator.rotation = Quaternion.identity;
+
+        pickRotation = pickIndicator.DORotate(new Vector3(0, 360, 0), 2f, RotateMode.FastBeyond360)
+            .SetLoops(-1, LoopType.Restart)
+            .SetEase(Ease.Linear);
+    }
+
+    private void ShowAlert()
+    {
+        alertCanvasGroup.alpha = 0;
+        alertCanvasGroup.gameObject.SetActive(true);
+
+        alertCanvasGroup.DOFade(1, 0.3f)
+            .OnComplete(() =>
+            {
+                alertCanvasGroup.DOFade(0, 0.3f)
+                    .SetDelay(2f)
+                    .OnComplete(() =>
+                    {
+                        alertCanvasGroup.gameObject.SetActive(false);
+                    });
+            });
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
