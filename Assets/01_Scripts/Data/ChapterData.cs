@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum ChapterNumber
 {
@@ -16,5 +17,6 @@ public enum ChapterNumber
 public class ChapterData : ScriptableObject
 {
     public ChapterNumber chapterNumber;
+    public Sprite chapterImage;
     public StageData[] stages;
 }

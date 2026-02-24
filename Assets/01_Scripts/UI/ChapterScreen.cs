@@ -1,5 +1,3 @@
-using System;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -46,7 +44,7 @@ public class ChapterScreen : MonoBehaviour
                 GameManager.Instance.chapterData = chapters[index];
                 LobbyManager.Instance.stageScreen.ShowStageScreen();
             });
-            chapter.GetComponentInChildren<TMP_Text>().text = $"Chapter {(int)chapters[i].chapterNumber + 1}";
+            chapter.GetComponent<ChapterItem>().Setup(chapters[i]);
         }
     }
 }
