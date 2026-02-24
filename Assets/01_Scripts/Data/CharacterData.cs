@@ -4,7 +4,9 @@ using UnityEngine;
 public class CharacterData : ScriptableObject
 {
     public string charName;
-    public GameObject Prefab;
+    public Sprite fullImage;
+    public Sprite profileImage;
+    public GameObject prefab;
     public CharacterStats stats;
 }
 
