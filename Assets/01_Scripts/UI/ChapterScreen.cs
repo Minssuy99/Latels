@@ -1,35 +1,53 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ChapterScreen : MonoBehaviour
+public class ChapterScreen : UIScreen
 {
+    [Header("※ Chapter")]
     [SerializeField] private ChapterData[] chapters;
     [SerializeField] private GameObject content;
     [SerializeField] private GameObject chapterPrefab;
+
+    [Space(10)]
+    [Header("※ Reference")]
+    [SerializeField] private UIScreen stageScreen;
 
     private void Start()
     {
         PlaceChapterPrefab();
     }
 
-    public void ShowChapterScreen()
+    public override void OnEnter(Action onComplete)
     {
-        FadeManager.Instance.PlayFade(FadeDirection.RightToLeft, EnableChapterScreen, 1);
+        if (onComplete != null)
+        {
+            FadeManager.Instance.PlayFade(FadeDirection.RightToLeft, () =>
+            {
+                onComplete.Invoke();
+                gameObject.SetActive(true);
+            }, 1);
+        }
+        else
+        {
+            gameObject.SetActive(true);
+        }
     }
 
-    public void HideChapterScreen()
+    public override void OnExit(Action onComplete)
     {
-        FadeManager.Instance.PlayFade(FadeDirection.LeftToRight, DisableChapterScreen, 1);
-    }
-
-    private void EnableChapterScreen()
-    {
-        gameObject.SetActive(true);
-    }
-
-    private void DisableChapterScreen()
-    {
-        gameObject.SetActive(false);
+        if (onComplete != null)
+        {
+            FadeManager.Instance.PlayFade(FadeDirection.LeftToRight, () =>
+            {
+                gameObject.SetActive(false);
+                onComplete.Invoke();
+            }, 1);
+        }
+        else
+        {
+            gameObject.SetActive(false);
+        }
     }
 
     private void PlaceChapterPrefab()
@@ -42,7 +60,7 @@ public class ChapterScreen : MonoBehaviour
             chapter.GetComponent<Button>().onClick.AddListener(() =>
             {
                 GameManager.Instance.chapterData = chapters[index];
-                LobbyManager.Instance.stageScreen.ShowStageScreen();
+                UIManager.Instance.Open(stageScreen);
             });
             chapter.GetComponent<ChapterItem>().Setup(chapters[i]);
         }

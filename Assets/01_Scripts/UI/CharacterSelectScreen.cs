@@ -5,41 +5,50 @@ using UnityEngine;
 using DG.Tweening;
 using UnityEngine.UI;
 
-public class CharacterSelectScreen : MonoBehaviour
+public class CharacterSelectScreen : UIScreen
 {
+    [Header("※ Camera")]
     [SerializeField] private Transform camDefaultPos;
     [SerializeField] private Transform camPanelPos;
 
-    [SerializeField] private GameObject startButton;
-    [SerializeField] private GameObject confirmButton;
-    [SerializeField] private GameObject backButtonPanel;
-    [SerializeField] private RectTransform characterList;
-
+    [Space(10)]
+    [Header("※ Character Slot")]
     [SerializeField] private RectTransform characterPanel;
     [SerializeField] private TMP_Text[] characterName;
     [SerializeField] private GameObject[] characterPosition;
-
-    [Header("Character List Settings")]
-    [SerializeField] private RectTransform pickIndicator;
-    [SerializeField] private RectTransform[] touchPanels;
-    [SerializeField] private CanvasGroup alertCanvasGroup;
-    private Tweener pickRotation;
-
-
-    [SerializeField] private GameObject listItemPrefab;
-    [SerializeField] private Transform listContent;
     [SerializeField] private GameObject[] nameTags;
     [SerializeField] private GameObject[] emptyIcons;
-    private CharacterData[] ownedCharacters;
-    private List<CharacterListItem> listItems = new List<CharacterListItem>();
 
+    [Space(10)]
+    [Header("※ Button")]
+    [SerializeField] private GameObject startButton;
+    [SerializeField] private GameObject confirmButton;
+    [SerializeField] private GameObject backButtonPanel;
 
+    [Space(10)]
+    [Header("※ List Panel")]
+    [SerializeField] private RectTransform characterList;
+    [SerializeField] private RectTransform pickIndicator;
+    [SerializeField] private RectTransform[] touchPanels;
+    [SerializeField] private GameObject listItemPrefab;
+    [SerializeField] private Transform listContent;
 
-    private GameObject[] character = new GameObject[3];
+    [Space(10)]
+    [Header("※ Alert")]
+    [SerializeField] private CanvasGroup alertCanvasGroup;
+
+    [Space(10)]
+    [Header("※ Reference")]
+    [SerializeField] private UIScreen stageScreen;
+
     private Camera cam;
-    private bool isPanelOpen = false;
-    private float defaultFOV;
     private ScrollRect characterListScroll;
+    private CharacterData[] ownedCharacters;
+    private GameObject[] displayModels = new GameObject[3];
+    private List<CharacterListItem> listItems = new();
+    private Tweener pickRotation;
+    private float defaultFOV;
+    private bool isPanelOpen;
     private int selectedSlotIndex = -1;
 
     private void Awake()
@@ -50,8 +59,9 @@ public class CharacterSelectScreen : MonoBehaviour
         alertCanvasGroup.alpha = 0;
     }
 
-    private void OnEnable()
+    public override void OnEnter(Action onComplete)
     {
+        gameObject.SetActive(true);
         isPanelOpen = false;
         pickIndicator.gameObject.SetActive(false);
 
@@ -73,11 +83,26 @@ public class CharacterSelectScreen : MonoBehaviour
         characterList.gameObject.SetActive(false);
         backButtonPanel.gameObject.SetActive(false);
         characterList.DOAnchorPosX(830f, 0.25f);
+
+        onComplete?.Invoke();
     }
 
-    public void HideSelectScreen()
+    public override void OnExit(Action onComplete)
     {
-        FadeManager.Instance.PlayFade(FadeDirection.LeftToRight, DisableSelectScreen, 1);
+        if (onComplete != null)
+        {
+            FadeManager.Instance.PlayFade(FadeDirection.LeftToRight, () =>
+            {
+                characterListScroll.verticalNormalizedPosition = 1;
+                gameObject.SetActive(false);
+                onComplete.Invoke();
+            }, 1);
+        }
+        else
+        {
+            characterListScroll.verticalNormalizedPosition = 1;
+            gameObject.SetActive(false);
+        }
     }
 
     public void StartGame()
@@ -88,16 +113,11 @@ public class CharacterSelectScreen : MonoBehaviour
             return;
         }
 
-        GameManager.Instance.onReturnToLobby = () =>
-        {
-            LobbyManager.Instance.LobbyScreen.SetActive(true);
-            LobbyManager.Instance.chapterScreen.gameObject.SetActive(true);
-            LobbyManager.Instance.stageScreen.OpenDirect();
-        };
-        FadeManager.Instance.PlayFade(FadeDirection.RightToLeft, () =>
+        GameManager.Instance.returnToStage = true;
+        FadeManager.Instance.PlayBlackFade(() =>
         {
             GameManager.Instance.LoadGameScene(GameManager.Instance.stageData);
-        }, 1);
+        }, 1f);
     }
 
     public void ShowCharacterSelectPanel(int index)
@@ -141,15 +161,6 @@ public class CharacterSelectScreen : MonoBehaviour
         {
             characterList.gameObject.SetActive(false);
         });
-    }
-
-    private void DisableSelectScreen()
-    {
-        LobbyManager.Instance.LobbyScreen.SetActive(true);
-        LobbyManager.Instance.chapterScreen.gameObject.SetActive(true);
-        LobbyManager.Instance.stageScreen.OpenDirect();
-        characterListScroll.verticalNormalizedPosition = 1;
-        LobbyManager.Instance.characterSelectScreen.gameObject.SetActive(false);
     }
 
     private void PopulateList()
@@ -213,22 +224,22 @@ public class CharacterSelectScreen : MonoBehaviour
 
         for (int i = 0; i < slots.Length; i++)
         {
-            if (character[i] != null)
+            if (displayModels[i] != null)
             {
-                Destroy(character[i]);
+                Destroy(displayModels[i]);
             }
 
             if (slots[i] != null)
             {
-                character[i] = Instantiate(slots[i].prefab, characterPosition[i].transform);
-                character[i].GetComponent<CharacterSetup>().SetRole(CharacterRole.Display, GameManager.Instance.characterSlots[i]);
+                displayModels[i] = Instantiate(slots[i].prefab, characterPosition[i].transform);
+                displayModels[i].GetComponent<CharacterSetup>().SetRole(CharacterRole.Display, GameManager.Instance.characterSlots[i]);
                 characterName[i].text = slots[i].charName;
                 emptyIcons[i].SetActive(false);
                 nameTags[i].SetActive(true);
             }
             else
             {
-                character[i] = null;
+                displayModels[i] = null;
                 characterName[i].text = "";
                 emptyIcons[i].SetActive(true);
                 nameTags[i].SetActive(false);
@@ -284,42 +295,3 @@ public class CharacterSelectScreen : MonoBehaviour
             });
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

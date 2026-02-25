@@ -1,41 +1,70 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class StageScreen : MonoBehaviour
+public class StageScreen : UIScreen
 {
+    [Header("※ Stage")]
     [SerializeField] private GameObject content;
     [SerializeField] private GameObject stagePrefab;
 
-    private List<GameObject> spawnedStages = new List<GameObject>();
-    public void ShowStageScreen()
+    [Space(10)]
+    [Header("※ Reference")]
+    [SerializeField] private UIScreen stageInfoPopup;
+
+    private ScrollRect scrollRect;
+    private List<GameObject> spawnedStages = new ();
+
+    private void Awake()
     {
-        FadeManager.Instance.PlayFade(FadeDirection.RightToLeft, EnableStageScreen, 1);
+        scrollRect = GetComponentInChildren<ScrollRect>();
     }
 
-    public void HideStageScreen()
+    public override void OnEnter(Action onComplete)
     {
-        FadeManager.Instance.PlayFade(FadeDirection.LeftToRight, DisableStageScreen, 1);
+        if (onComplete != null)
+        {
+            FadeManager.Instance.PlayFade(FadeDirection.RightToLeft, () =>
+            {
+                onComplete.Invoke();
+                EnterScreen();
+            }, 1);
+        }
+        else
+        {
+            EnterScreen();
+        }
     }
 
-    private void EnableStageScreen()
+    public override void OnExit(Action onComplete)
+    {
+        if (onComplete != null)
+        {
+            FadeManager.Instance.PlayFade(FadeDirection.LeftToRight, () =>
+            {
+                ExitScreen();
+                onComplete.Invoke();
+            }, 1);
+        }
+        else
+        {
+            ExitScreen();
+        }
+    }
+
+    private void EnterScreen()
     {
         gameObject.SetActive(true);
-        gameObject.GetComponentInChildren<ScrollRect>().horizontalNormalizedPosition = 0;
+        scrollRect.horizontalNormalizedPosition = 0;
         PlaceStagePrefab();
     }
 
-    private void DisableStageScreen()
+    private void ExitScreen()
     {
         DestroyStagePrefab();
         gameObject.SetActive(false);
-    }
-
-    public void OpenDirect()
-    {
-        gameObject.SetActive(true);
-        PlaceStagePrefab();
     }
 
     private void PlaceStagePrefab()
@@ -47,14 +76,13 @@ public class StageScreen : MonoBehaviour
             GameObject stage = Instantiate(stagePrefab, content.transform);
             spawnedStages.Add(stage);
 
-            RectTransform spawnRect = stage.GetComponent<RectTransform>();
-            spawnRect.anchoredPosition = data.stages[i].stageScreenPosition;
-
+            stage.GetComponent<RectTransform>().anchoredPosition = data.stages[i].stageScreenPosition;
 
             int index = i;
             stage.GetComponent<Button>().onClick.AddListener(() =>
             {
-                LobbyManager.Instance.stageInfoPopup.ShowStageInfoPopup(index);
+                GameManager.Instance.stageData = GameManager.Instance.chapterData.stages[index];
+                UIManager.Instance.Open(stageInfoPopup);
             });
 
             string chapterName = ((int)data.chapterNumber + 1).ToString();
