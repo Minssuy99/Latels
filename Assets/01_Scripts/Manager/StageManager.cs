@@ -62,7 +62,7 @@ public class StageManager : Singleton<StageManager>
         CharacterData[] slots = GameManager.Instance.characterSlots;
         Transform battleRoot = new GameObject("캐릭터").transform;
 
-        playerObj = Instantiate(slots[0].prefab, playerSpawn.position, playerSpawn.rotation);
+        playerObj = Instantiate(slots[0].battlePrefab, playerSpawn.position, playerSpawn.rotation);
         playerObj.GetComponent<CharacterSetup>().SetRole(CharacterRole.Main, slots[0]);
         InGameUIManager.Instance.SetPlayer(playerObj.GetComponent<PlayerStateManager>());
         TimeManager.Instance.SetAnimator(playerObj.GetComponent<Animator>());
@@ -76,7 +76,7 @@ public class StageManager : Singleton<StageManager>
         {
             if (slots[i] == null) continue;
 
-            GameObject supportObj = Instantiate(slots[i].prefab, battleRoot, true);
+            GameObject supportObj = Instantiate(slots[i].battlePrefab, battleRoot, true);
             supportObj.name = $"지원: {slots[i].charName}";
             supportObj.GetComponent<CharacterSetup>().SetRole(CharacterRole.Support, slots[i]);
             playerObj.GetComponent<SupportSkill>().SetSupport(i - 1, supportObj);
@@ -92,7 +92,7 @@ public class StageManager : Singleton<StageManager>
         {
             if (slots[i] == null) continue;
 
-            Instantiate(slots[i].prefab, clearPlace.characterPosition[i]).GetComponent<CharacterSetup>().SetRole(CharacterRole.Display, slots[i]);
+            Instantiate(slots[i].displayPrefab, clearPlace.characterPosition[i]);
         }
     }
 

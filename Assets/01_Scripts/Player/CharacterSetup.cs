@@ -2,7 +2,6 @@ using UnityEngine;
 
 public enum CharacterRole
 {
-    Display,
     Main,
     Support,
 }
@@ -40,10 +39,6 @@ public class CharacterSetup : MonoBehaviour
                         component.enabled = true;
                     }
                 }
-                break;
-            }
-            case CharacterRole.Display:
-            {
                 break;
             }
         }

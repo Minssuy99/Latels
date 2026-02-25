@@ -6,7 +6,8 @@ public class CharacterData : ScriptableObject
     public string charName;
     public Sprite fullImage;
     public Sprite profileImage;
-    public GameObject prefab;
+    public GameObject battlePrefab;
+    public GameObject displayPrefab;
     public CharacterStats stats;
 }
 
