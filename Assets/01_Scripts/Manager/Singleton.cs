@@ -29,25 +29,24 @@ public class Singleton<T> : SingletonBase where T : MonoBehaviour
 
     protected virtual void Awake()
     {
-        if (_instance == null)
-        {
-            _instance = this as T;
-
-            if (DontDestroy)
-            {
-                if (transform.parent != null)
-                {
-                    DontDestroyOnLoad(transform.root.gameObject);
-                }
-                else
-                {
-                    DontDestroyOnLoad(gameObject);
-                }
-            }
-        }
-        else
+        if (_instance != null && _instance != this)
         {
             Destroy(gameObject);
+            return;
+        }
+
+        _instance = this as T;
+
+        if (DontDestroy)
+        {
+            if (transform.parent != null)
+            {
+                DontDestroyOnLoad(transform.root.gameObject);
+            }
+            else
+            {
+                DontDestroyOnLoad(gameObject);
+            }
         }
     }
     protected virtual void OnDestroy()
