@@ -114,10 +114,7 @@ public class CharacterSelectScreen : UIScreen
         }
 
         GameManager.Instance.returnToStage = true;
-        FadeManager.Instance.PlayBlackFade(() =>
-        {
-            GameManager.Instance.LoadGameScene(GameManager.Instance.stageData);
-        }, 1f);
+        GameManager.Instance.LoadGameScene(GameManager.Instance.stageData);
     }
 
     public void ShowCharacterSelectPanel(int index)
@@ -231,8 +228,7 @@ public class CharacterSelectScreen : UIScreen
 
             if (slots[i] != null)
             {
-                displayModels[i] = Instantiate(slots[i].prefab, characterPosition[i].transform);
-                displayModels[i].GetComponent<CharacterSetup>().SetRole(CharacterRole.Display, GameManager.Instance.characterSlots[i]);
+                displayModels[i] = Instantiate(slots[i].displayPrefab, characterPosition[i].transform);
                 characterName[i].text = slots[i].charName;
                 emptyIcons[i].SetActive(false);
                 nameTags[i].SetActive(true);

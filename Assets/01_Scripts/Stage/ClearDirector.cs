@@ -78,10 +78,7 @@ public class ClearDirector : MonoBehaviour
         continueButton.onClick.AddListener(() =>
         {
             InGameUIManager.Instance.enabled = false;
-            FadeManager.Instance.PlayBlackFade(() =>
-            {
-                GameManager.Instance.LoadLobbyScene();
-            }, 2f);
+            GameManager.Instance.LoadLobbyScene();
         });
     }
 

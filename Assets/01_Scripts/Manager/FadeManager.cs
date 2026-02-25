@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.UI;
 
 public enum FadeDirection
 {
@@ -11,6 +12,8 @@ public enum FadeDirection
 public class FadeManager : Singleton<FadeManager>
 {
     [SerializeField] private CanvasGroup blackFadePanel;
+    [SerializeField] private CanvasGroup progressBar;
+    [SerializeField] private Image progressFilled;
 
     [SerializeField] private GameObject fader;
     [SerializeField] private float halftoneOffset;
@@ -33,22 +36,52 @@ public class FadeManager : Singleton<FadeManager>
         faderRect = fader.GetComponent<RectTransform>();
         faderRect.anchoredPosition = new Vector2(screenWidth + halftoneOffset, 0);
         canvasGroup.alpha = 1;
+
         blackFadePanel.alpha = 0;
         blackFadePanel.gameObject.SetActive(false);
         fader.SetActive(false);
+        progressFilled.fillAmount = 0;
+        progressBar.alpha = 0;
+        progressBar.gameObject.SetActive(false);
     }
 
-    public void PlayBlackFade(Action onScreenCovered, float holdTime)
+    public void SetProgress(float progress)
+    {
+        progressFilled.fillAmount = progress;
+    }
+
+    public void ShowProgressBar()
+    {
+        progressBar.alpha = 0;
+        progressBar.gameObject.SetActive(true);
+        progressFilled.fillAmount = 0;
+        progressBar.DOFade(1, 1f).SetUpdate(true);
+    }
+
+    public void HideProgressBar()
+    {
+        progressBar.DOFade(0, 1f).SetUpdate(true).OnComplete(() =>
+        {
+            progressBar.gameObject.SetActive(false);
+        });
+    }
+
+    public void BlackFadeIn(Action onScreenCovered = null)
     {
         blackFadePanel.gameObject.SetActive(true);
         blackFadePanel.alpha = 0f;
-        blackFadePanel.DOFade(1, 0.25f).OnComplete(() =>
+
+        blackFadePanel.DOFade(1, 0.25f).SetUpdate(true).OnComplete(() =>
         {
             onScreenCovered?.Invoke();
-            blackFadePanel.DOFade(0, 0.25f).SetDelay(holdTime).OnComplete(() =>
-            {
-                blackFadePanel.gameObject.SetActive(false);
-            });
+        });
+    }
+
+    public void BlackFadeOut()
+    {
+        blackFadePanel.DOFade(0, 0.25f).OnComplete(() =>
+        {
+            blackFadePanel.gameObject.SetActive(false);
         });
     }
 
