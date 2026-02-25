@@ -17,7 +17,6 @@ public class PlayerSkillState : PlayerBaseState
         direction.y = 0;
 
         player.transform.rotation = Quaternion.LookRotation(direction);
-        // player.animator.SetTrigger("Skill");
         player.skill.OnSkillStart();
     }
 

@@ -17,8 +17,8 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
     private bool wasDiagonal;
 
     // 애니메이션
-    private float velocityXSmooth = 0f;
-    private float velocityZSmooth = 0f;
+    private float velocityXSmooth;
+    private float velocityZSmooth;
 
     // 충돌 보정
     private float groundY;

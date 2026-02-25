@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class PlayerIdleState : PlayerBaseState
 {
     public PlayerIdleState(PlayerStateManager player) : base(player)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class PlayerAttack : MonoBehaviour
 {
-    private List<EnemyStateManager> enemies = new List<EnemyStateManager>();
+    private List<EnemyStateManager> enemies = new ();
     public List<EnemyStateManager> GetEnemies() => enemies;
 
     protected PlayerStateManager player;

@@ -5,7 +5,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable, IBattleComponent
     public float HP { get; private set; }
     public float MaxHP => player.CharacterData.stats.health;
 
-    private float hitCooldown = 0f;
+    private float hitCooldown;
     private PlayerStateManager player;
 
     private void Awake()

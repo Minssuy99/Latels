@@ -2,10 +2,10 @@ using UnityEngine;
 
 public class DodgeDetector : MonoBehaviour
 {
-    public bool isEnemyAttackNearby { get; private set; } = false;
+    public bool isEnemyAttackNearby { get; private set; }
 
     [SerializeField] private float detectionDuration = 0.3f;
-    private float detectionTimer = 0f;
+    private float detectionTimer;
 
     private void OnTriggerStay(Collider other)
     {

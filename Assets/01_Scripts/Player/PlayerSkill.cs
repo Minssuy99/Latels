@@ -36,7 +36,7 @@ public class PlayerSkill : MonoBehaviour, ISkillComponent, ISupportSkill
 
         for (int i = enemies.Count - 1; i >= 0; i--)
         {
-            if (enemies[i] == null) continue;
+            if (!enemies[i]) continue;
             if (enemies[i].gameObject == exclude) continue;
 
             dist = Vector3.Distance(transform.position, enemies[i].transform.position);

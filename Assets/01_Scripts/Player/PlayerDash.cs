@@ -17,15 +17,14 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
     // 대쉬 스택
     private int maxStack = 3;
     private int currentStack = 3;
-    private float chargeTimer = 0f;
-    private float reuseTimer = 0f;
+    private float chargeTimer;
+    private float reuseTimer;
 
     // 런타임
     [HideInInspector] public Vector3 dashDirection;
 
     // UI용 프로퍼티
     public int CurrentStack => currentStack;
-    public int MaxStack => maxStack;
     public float ChargeFillAmount => chargeTimer / chargeTime;
     public bool IsReuseDelay => reuseTimer > 0f;
     public float ReuseTimer => reuseTimer;
@@ -85,20 +84,6 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
 
     public IEnumerator DashCoroutine()
     {
-        // yield return new WaitForSecondsRealtime(dashDuration);
-        //
-        // if (playerState.move.moveDirection.sqrMagnitude > 0f)
-        // {
-        //     playerState.ChangeState(playerState.sprintState);
-        // }
-        // else
-        // {
-        //     playerState.ChangeState(playerState.idleState);
-        // }
-        //
-        // yield return new WaitForSecondsRealtime(0.1f);
-        // playerState.canAttack = true;
-
         float dashDistance = dashSpeed * dashDuration;
         float moved = 0;
         while (moved < dashDistance)

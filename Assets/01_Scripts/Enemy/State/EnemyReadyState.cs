@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class EnemyReadyState : EnemyBaseState
 {
     public EnemyReadyState(EnemyStateManager enemy) : base(enemy)

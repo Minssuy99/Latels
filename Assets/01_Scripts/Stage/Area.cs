@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class Area : MonoBehaviour
 {
@@ -10,15 +10,13 @@ public class Area : MonoBehaviour
 
     public Action OnCleared;
 
-    private List<EnemyStateManager> enemies = new List<EnemyStateManager>();
-    private bool isEnter = false;
+    private List<EnemyStateManager> enemies = new();
+    private bool isEnter;
 
     private void Start()
     {
         door.SetActive(true);
     }
-
-    public List<EnemyStateManager> GetEnemies() => enemies;
 
     private void OnTriggerEnter(Collider other)
     {
