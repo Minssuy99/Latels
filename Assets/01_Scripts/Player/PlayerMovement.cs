@@ -5,22 +5,18 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
 {
     private PlayerStateManager player;
 
-    // 이동 설정
     [SerializeField] private float moveSpeed = 4.5f;
     [SerializeField] private float SprintSpeed = 6f;
     [SerializeField] private float rotationSpeed = 15f;
 
-    // 이동 상태
     [HideInInspector] public Vector3 moveDirection;
     private Vector3 lastDirection;
     private Quaternion targetRotation;
     private bool wasDiagonal;
 
-    // 애니메이션
     private float velocityXSmooth;
     private float velocityZSmooth;
 
-    // 충돌 보정
     private float groundY;
 
     private void Awake()
@@ -117,8 +113,11 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
         }
         else
         {
-            player.animator.SetLayerWeight(1, 0.0f);
-            player.animator.SetLayerWeight(2, 0.0f);
+            if (player.isAttackFinishing == false)
+            {
+                player.animator.SetLayerWeight(1, 0.0f);
+                player.animator.SetLayerWeight(2, 0.0f);
+            }
             player.animator.SetFloat("Velocity", moveDirection.magnitude);
         }
     }

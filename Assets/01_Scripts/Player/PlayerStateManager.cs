@@ -23,6 +23,7 @@ public class PlayerStateManager : MonoBehaviour, IBattleComponent
     public bool isHit { get; set; }
     public bool isLockedOn { get; set; }
     public bool isAttacking { get; set; }
+    public bool isAttackFinishing {get; set;}
     public bool isInvincible { get; set; }
     public bool IsDead => currentState is PlayerDeadState;
     public bool IsDashing => currentState is PlayerDashState;
@@ -82,6 +83,32 @@ public class PlayerStateManager : MonoBehaviour, IBattleComponent
     {
         float speed = 10f * TimeManager.Instance.PlayerDelta;
 
+        if (isAttackFinishing)
+        {
+            if (animator.GetCurrentAnimatorStateInfo(1).normalizedTime >= 1.0f)
+            {
+                animator.SetLayerWeight(1, 0.0f);
+                animator.SetLayerWeight(2, 0.0f);
+                isAttackFinishing = false;
+                isAttacking = false;
+            }
+            else
+            {
+                bool isMoving = move.moveDirection.sqrMagnitude > 0.1f;
+                if (isMoving)
+                {
+                    animator.SetLayerWeight(1, Mathf.Lerp(animator.GetLayerWeight(1), 0.0f, speed));
+                    animator.SetLayerWeight(2, Mathf.Lerp(animator.GetLayerWeight(2), 1.0f, speed));
+                }
+                else
+                {
+                    animator.SetLayerWeight(1, Mathf.Lerp(animator.GetLayerWeight(1), 1.0f, speed));
+                    animator.SetLayerWeight(2, Mathf.Lerp(animator.GetLayerWeight(2), 0.0f, speed));
+                }
+            }
+            return;
+        }
+
         if (isAttacking)
         {
             bool isMoving = move.moveDirection.sqrMagnitude > 0.1f;
@@ -99,8 +126,11 @@ public class PlayerStateManager : MonoBehaviour, IBattleComponent
         }
         else
         {
-            animator.SetLayerWeight(1, Mathf.Lerp(animator.GetLayerWeight(1), 0.0f, speed));
-            animator.SetLayerWeight(2, Mathf.Lerp(animator.GetLayerWeight(2), 0.0f, speed));
+            if (!isAttackFinishing)
+            {
+                animator.SetLayerWeight(1, Mathf.Lerp(animator.GetLayerWeight(1), 0.0f, speed));
+                animator.SetLayerWeight(2, Mathf.Lerp(animator.GetLayerWeight(2), 0.0f, speed));
+            }
         }
     }
 }

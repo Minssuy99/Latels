@@ -68,6 +68,13 @@ public class PlayerAttack : MonoBehaviour
             {
                 if (player.isLockedOn)
                 {
+                    if (player.isAttacking)
+                    {
+                        player.isAttackFinishing = true;
+                        player.animator.ResetTrigger("Attack");
+                    }
+
+
                     player.animator.SetBool("isLockedOn", false);
                     player.isLockedOn = false;
                 }
@@ -75,6 +82,12 @@ public class PlayerAttack : MonoBehaviour
         }
         else
         {
+            if (player.isAttacking)
+            {
+                player.isAttackFinishing = true;
+                player.animator.ResetTrigger("Attack");
+            }
+
             player.isLockedOn = false;
             player.animator.SetBool("isLockedOn", false);
         }
@@ -82,6 +95,17 @@ public class PlayerAttack : MonoBehaviour
 
     private void UpdateAttack()
     {
+        if (player.isAttackFinishing)
+        {
+            if (player.targetDistance <= player.CharacterData.stats.attackRange)
+            {
+                player.isAttackFinishing = false;
+                player.isAttacking = true;
+                ExecuteAttack();
+            }
+            return;
+        }
+
         if (!player.targetEnemy)
         {
             player.animator.ResetTrigger("Attack");
@@ -96,6 +120,11 @@ public class PlayerAttack : MonoBehaviour
         }
         else
         {
+            if (player.isAttacking)
+            {
+                player.isAttackFinishing = true;
+                player.animator.ResetTrigger("Attack");
+            }
             player.isAttacking = false;
         }
     }
