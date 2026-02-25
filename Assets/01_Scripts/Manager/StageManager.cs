@@ -5,27 +5,22 @@ using UnityEngine.InputSystem;
 
 public class StageManager : Singleton<StageManager>
 {
-    // 인스펙터
-    [SerializeField] private StageClear stageClear;
+    [SerializeField] private ClearDirector clearDirector;
 
-    // 이벤트
     public event Action OnStageClear;
 
-    // 플레이어
     public PlayerInput PlayerInput => playerInput;
     private PlayerInput playerInput;
     private GameObject playerObj;
 
-    // 맵
     private GameObject map;
     private ClearPlace clearPlace;
     private Transform playerSpawn;
     private Area[] areas;
 
-    // 스테이지
     private StageData stageData;
-    private int clearAreaCount = 0;
-    private int totalAreaCount = 0;
+    private int clearAreaCount;
+    private int totalAreaCount;
 
     protected override void Awake()
     {
@@ -38,7 +33,6 @@ public class StageManager : Singleton<StageManager>
         clearAreaCount++;
         if (clearAreaCount >= totalAreaCount)
         {
-            Debug.Log("스테이지 클리어!");
             OnStageClear?.Invoke();
         }
     }
@@ -58,7 +52,7 @@ public class StageManager : Singleton<StageManager>
         map = Instantiate(stageData.mapPrefab);
         map.GetComponent<NavMeshSurface>().BuildNavMesh();
         clearPlace = map.GetComponentInChildren<ClearPlace>();
-        stageClear.SetCameraPoint(clearPlace.cameraPoint, clearPlace.CameraEndPoint);
+        clearDirector.SetCameraPoint(clearPlace.cameraPoint, clearPlace.CameraEndPoint);
         Camera.main.fieldOfView = 60f;
         playerSpawn = map.transform.Find("PlayerSpawn");
     }
@@ -71,6 +65,8 @@ public class StageManager : Singleton<StageManager>
         playerObj = Instantiate(slots[0].prefab, playerSpawn.position, playerSpawn.rotation);
         playerObj.GetComponent<CharacterSetup>().SetRole(CharacterRole.Main, slots[0]);
         InGameUIManager.Instance.SetPlayer(playerObj.GetComponent<PlayerStateManager>());
+        TimeManager.Instance.SetAnimator(playerObj.GetComponent<Animator>());
+        Camera.main.GetComponent<FollowCamera>().SetPlayer(playerObj.transform);
         playerInput = playerObj.GetComponent<PlayerInput>();
         playerObj.transform.SetParent(battleRoot, true);
         playerObj.name = $"메인: {slots[0].charName}";
@@ -120,6 +116,8 @@ public class StageManager : Singleton<StageManager>
                     enemy.gameObject.name = $"보스: {point.Data.EnemyName}";
                     area.SetBoss(enemy);
                 }
+
+                enemy.SetPlayer(playerObj);
             }
         }
     }
