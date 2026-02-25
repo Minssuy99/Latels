@@ -1,6 +1,6 @@
-using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using DG.Tweening;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -11,16 +11,18 @@ public class GameManager : Singleton<GameManager>
     public ChapterData chapterData;
     public StageData stageData;
 
-    public Action onReturnToLobby;
+    public bool returnToStage;
 
     public void LoadGameScene(StageData stageData)
     {
         this.stageData = stageData;
+        DOTween.KillAll();
         SceneManager.LoadScene("GameScene");
     }
 
     public void LoadLobbyScene()
     {
+        DOTween.KillAll();
         SceneManager.LoadScene("LobbyScene");
     }
 }
