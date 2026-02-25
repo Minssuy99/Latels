@@ -4,7 +4,7 @@ using System.Collections;
 
 public class EnemyStateManager : MonoBehaviour
 {
-    public IState currentState { get; private set; } = null;
+    public IState currentState { get; private set; }
 
     public EnemyData Data { get; private set; }
     public EnemyAttack attack { get; private set; }
@@ -17,13 +17,13 @@ public class EnemyStateManager : MonoBehaviour
     public EnemyDeadState deadState { get; private set; }
 
     public GameObject player { get; private set; }
-    public Vector3 playerPos => new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z);
+    public Vector3 playerPos => new (player.transform.position.x, transform.position.y, player.transform.position.z);
     public PlayerStateManager playerState { get; private set; }
     public Animator animator { get; private set; }
     public NavMeshAgent agent { get; set; }
 
     public float targetDistance { get; set; }
-    public bool rotationLocked { get; set; } = false;
+    public bool rotationLocked { get; set; }
 
     public Area area { get; private set; }
 
@@ -39,8 +39,6 @@ public class EnemyStateManager : MonoBehaviour
         animator = GetComponent<Animator>();
         attack = GetComponent<EnemyAttack>();
         agent =  GetComponent<NavMeshAgent>();
-        player = GameObject.FindGameObjectWithTag("Player");
-        playerState = player.GetComponent<PlayerStateManager>();
     }
 
     private void Start()
@@ -80,6 +78,12 @@ public class EnemyStateManager : MonoBehaviour
         agent.stoppingDistance = Data.stats.attackRange;
     }
 
+    public void SetPlayer(GameObject player)
+    {
+        this.player = player;
+        playerState = player.GetComponent<PlayerStateManager>();
+    }
+
     public void Activate(Area area)
     {
         ChangeState(readyState);
@@ -108,10 +112,16 @@ public class EnemyStateManager : MonoBehaviour
         float sinkDistance = 1f;
         float sunk = 0f;
 
-        yield return new WaitForSeconds(3f);
+        float elapsed = 0f;
+        while (elapsed < 3f)
+        {
+            elapsed += TimeManager.Instance.EnemyDelta;
+            yield return null;
+        }
+
         while (sunk < sinkDistance)
         {
-            float delta = sinkSpeed * Time.deltaTime;
+            float delta = sinkSpeed * TimeManager.Instance.EnemyDelta;
             transform.position -= Vector3.up * delta;
             sunk += delta;
             yield return null;
