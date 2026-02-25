@@ -1,5 +1,4 @@
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class EnemyAttack : MonoBehaviour, IDamageable
 {
@@ -9,15 +8,13 @@ public class EnemyAttack : MonoBehaviour, IDamageable
     private EnemyStateManager enemy;
     [HideInInspector] public CapsuleCollider capsuleCollider;
 
-    // 전투 설정
-    [HideInInspector] public bool superArmor = false;
+    [HideInInspector] public bool superArmor;
     [HideInInspector] public int attackType;
     [HideInInspector] public float attackCooldown;
 
-    // 피격
     [SerializeField] private float hitCooldownDuration = 0.075f;
     [HideInInspector] public int hitCount;
-    private float hitCooldown = 0f;
+    private float hitCooldown;
 
     [Header("히트박스")]
     [SerializeField] private GameObject[] PunchHitboxes;
@@ -64,47 +61,20 @@ public class EnemyAttack : MonoBehaviour, IDamageable
 
     public void DisableAllHitboxes()
     {
-        foreach (var hitbox in PunchHitboxes)
-        {
-            hitbox.SetActive(false);
-        }
-
-        foreach (var hitbox in KickHitboxes)
-        {
-            hitbox.SetActive(false);
-        }
-
-        foreach (var dangerZone in PunchDangerZones)
-        {
-            dangerZone.SetActive(false);
-        }
-
-        foreach (var dangerZone in KickDangerZones)
-        {
-            dangerZone.SetActive(false);
-        }
+        SetColliders(PunchHitboxes, false);
+        SetColliders(KickHitboxes, false);
+        SetColliders(PunchDangerZones, false);
+        SetColliders(KickDangerZones, false);
     }
 
     public void SetHitbox(int action)
     {
         switch (action)
         {
-            case 0: // 주먹 켜기
-                foreach(var hitbox in PunchHitboxes)
-                    hitbox.SetActive(true);
-                break;
-            case 1: // 주먹 끄기
-                foreach(var hitbox in PunchHitboxes)
-                    hitbox.SetActive(false);
-                break;
-            case 2: // 발차기 켜기
-                foreach(var hitbox in KickHitboxes)
-                    hitbox.SetActive(true);
-                break;
-            case 3: // 발차기 끄기
-                foreach(var hitbox in KickHitboxes)
-                    hitbox.SetActive(false);
-                break;
+            case 0: SetColliders(PunchHitboxes, true); break;
+            case 1: SetColliders(PunchHitboxes, false); break;
+            case 2: SetColliders(KickHitboxes, true); break;
+            case 3: SetColliders(KickHitboxes, false); break;
         }
     }
 
@@ -112,28 +82,24 @@ public class EnemyAttack : MonoBehaviour, IDamageable
     {
         switch (action)
         {
-            case 0: // 주먹 켜기
-                foreach(var DangerZone in PunchDangerZones)
-                    DangerZone.SetActive(true);
-                break;
-            case 1: // 주먹 끄기
-                foreach(var DangerZone in PunchDangerZones)
-                    DangerZone.SetActive(false);
-                break;
-            case 2: // 발차기 켜기
-                foreach(var DangerZone in KickDangerZones)
-                    DangerZone.SetActive(true);
-                break;
-            case 3: // 발차기 끄기
-                foreach(var DangerZone in KickDangerZones)
-                    DangerZone.SetActive(false);
-                break;
+            case 0: SetColliders(PunchDangerZones, true); break;
+            case 1: SetColliders(PunchDangerZones, false); break;
+            case 2: SetColliders(KickDangerZones, true); break;
+            case 3: SetColliders(KickDangerZones, false); break;
         }
     }
 
     public void DisableCollider()
     {
         capsuleCollider.enabled = false;
+    }
+
+    private void SetColliders(GameObject[] objects, bool active)
+    {
+        foreach (var obj in objects)
+        {
+            obj.SetActive(active);
+        }
     }
 
     public void TakeDamage(float damage)

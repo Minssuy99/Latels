@@ -23,8 +23,6 @@ public class InGameUIManager : Singleton<InGameUIManager>
     [SerializeField] private Image mainSkill_Img;
     [SerializeField] private Image mainSkill_Line;
     [SerializeField] private TextMeshProUGUI mainSkill_Nbr;
-
-
     private PlayerStateManager player;
 
 
@@ -78,25 +76,17 @@ public class InGameUIManager : Singleton<InGameUIManager>
 
         if (player.dash.IsReuseDelay)
         {
-            Color bg = dash_Bg.color;
-            bg.a = 0.4f;
-            dash_Bg.color = bg;
+            SetImageAlpha(dash_Bg, 0.4f);
+            SetImageAlpha(dash_Img, 0.4f);
 
-            Color ic = dash_Img.color;
-            ic.a = 0.4f;
-            dash_Img.color = ic;
             dash_CanDashText.gameObject.SetActive(true);
             dash_CanDashText.text = player.dash.ReuseTimer.ToString("F1");
         }
         else
         {
-            Color bg = dash_Bg.color;
-            bg.a = 0f;
-            dash_Bg.color = bg;
+            SetImageAlpha(dash_Bg, 0f);
+            SetImageAlpha(dash_Img, 1f);
 
-            Color ic = dash_Img.color;
-            ic.a = 1f;
-            dash_Img.color = ic;
             dash_CanDashText.gameObject.SetActive(false);
         }
     }
@@ -105,17 +95,9 @@ public class InGameUIManager : Singleton<InGameUIManager>
     {
         if (remainTime > 0)
         {
-            Color bg = background.color;
-            bg.a = 0.4f;
-            background.color = bg;
-
-            Color ic = icon.color;
-            ic.a = 0.4f;
-            icon.color = ic;
-
-            Color ln = line.color;
-            ln.a = 0.4f;
-            line.color = ln;
+            SetImageAlpha(background, 0.4f);
+            SetImageAlpha(icon, 0.4f);
+            SetImageAlpha(line, 0.4f);
 
             text.gameObject.SetActive(true);
             text.text = Mathf.CeilToInt(remainTime).ToString();
@@ -127,17 +109,11 @@ public class InGameUIManager : Singleton<InGameUIManager>
         }
         else
         {
-            Color bg = background.color;
-            bg.a = 0f;
-            background.color = bg;
+            SetImageAlpha(background, 0f);
+            SetImageAlpha(icon, 1f);
+            SetImageAlpha(line, 1f);
 
-            Color ic = icon.color;
-            ic.a = 1f;
-            icon.color = ic;
 
-            Color ln = line.color;
-            ln.a = 1f;
-            line.color = ln;
             text.gameObject.SetActive(false);
         }
     }
@@ -185,6 +161,13 @@ public class InGameUIManager : Singleton<InGameUIManager>
         {
             nextBar.color = Color.clear;
         }
+    }
+
+    private void SetImageAlpha(Image image, float alpha)
+    {
+        Color temp = image.color;
+        temp.a = alpha;
+        image.color = temp;
     }
 
     public void ShowDamageEffect()
