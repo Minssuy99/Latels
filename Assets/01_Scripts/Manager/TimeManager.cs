@@ -5,28 +5,35 @@ using UnityEngine.Rendering.Universal;
 
 public class TimeManager : Singleton<TimeManager>
 {
-    [Header("Time Settings")]
-    [SerializeField] private float slowScale = 0.1f;
-    [SerializeField] private float playerHitStopScale = 0.3f;
+    [Header("※ Time Settings")]
+    [SerializeField] private float slowScale = 0.05f;
+    [SerializeField] private float playerHitStopScale = 0.6f;
     [SerializeField] private float hitStopDuration = 0.5f;
     [SerializeField] private float bulletTimeCooldown = 15f;
-    private float bulletTimeCooldownTimer = 0f;
+    private float bulletTimeCooldownTimer;
     private bool CanBulletTime => bulletTimeCooldownTimer <= 0f;
 
-    [Header("시각효과")]
+    [Header("※ Visual Effects")]
     [SerializeField] private Volume globalVolume;
     private Bloom bloom;
     private float baseFixedDeltaTime;
-    private bool isHitStop = false;
+    private bool isHitStop;
+    private Animator playerAnimator;
 
-    /* Property */
     public float PlayerDelta => isHitStop ? Time.unscaledDeltaTime * playerHitStopScale : Time.unscaledDeltaTime;
     public float EnemyDelta => Time.deltaTime;
 
     private void Start()
     {
         baseFixedDeltaTime = Time.fixedDeltaTime;
-        globalVolume.profile.TryGet(out bloom);
+        FindVolume();
+    }
+
+    private void FindVolume()
+    {
+        globalVolume = FindAnyObjectByType<Volume>();
+        if (globalVolume != null)
+            globalVolume.profile.TryGet(out bloom);
     }
 
     private void Update()
@@ -37,11 +44,22 @@ public class TimeManager : Singleton<TimeManager>
         }
     }
 
+    public void SetAnimator(Animator animator)
+    {
+        playerAnimator = animator;
+        FindVolume();
+    }
+
     public void StartHitStop()
     {
         isHitStop = true;
         Time.timeScale = slowScale;
         Time.fixedDeltaTime = baseFixedDeltaTime * slowScale;
+
+        if (playerAnimator)
+        {
+            playerAnimator.speed = playerHitStopScale / slowScale;
+        }
     }
 
     public void StopHitStop()
@@ -49,6 +67,11 @@ public class TimeManager : Singleton<TimeManager>
         isHitStop = false;
         Time.timeScale = 1f;
         Time.fixedDeltaTime = baseFixedDeltaTime;
+
+        if (playerAnimator)
+        {
+            playerAnimator.speed = 1f;
+        }
     }
 
     public void BulletTime(Animator animator)
