@@ -15,11 +15,8 @@ public class CharacterData : ScriptableObject
 public class CharacterStats
 {
     public float health;
+    public float attackRange;
     public float damage;
     public float skillDamage;
-
-    public float lockOnRange;
-    public float attackRange;
-
     public float skillCoolTime;
 }
