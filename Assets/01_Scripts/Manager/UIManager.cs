@@ -29,7 +29,6 @@ public class UIManager : Singleton<UIManager>
             GameManager.Instance.returnToStage = false;
 
             lobbyScreen.OnExit(null);
-            chapterScreen.OnEnter(null);
             stageScreen.OnEnter(null);
 
             screenStack.Push(chapterScreen);
