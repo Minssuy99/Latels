@@ -8,7 +8,8 @@ public class EnemyAttackState : EnemyBaseState
 
     public override void Enter()
     {
-        enemy.attack.attackType = Random.Range(0, 3);
+        enemy.agent.updatePosition = false;
+        enemy.attack.attackType = Random.Range(1, 3);
         enemy.animator.SetInteger("AttackType", enemy.attack.attackType);
         enemy.animator.SetTrigger("Attack");
     }
@@ -28,9 +29,11 @@ public class EnemyAttackState : EnemyBaseState
 
     public override void Exit()
     {
-        enemy.attack.attackCooldown = Random.Range(1, 3);
+        enemy.agent.Warp(enemy.transform.position);
+        enemy.agent.updatePosition = true;
+        enemy.attack.attackCooldown = Random.Range(1, enemy.Data.stats.attackCooldown);
         enemy.rotationLocked = false;
         enemy.attack.superArmor = false;
-        enemy.attack.hitCount = 0;
+        enemy.health.hitCount = 0;
     }
 }

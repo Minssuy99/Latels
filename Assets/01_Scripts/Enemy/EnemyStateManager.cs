@@ -8,6 +8,7 @@ public class EnemyStateManager : MonoBehaviour
 
     public EnemyData Data { get; private set; }
     public EnemyAttack attack { get; private set; }
+    public EnemyHealth health { get; private set; }
 
     public EnemyInactiveState inactiveState { get; private set; }
     public EnemyChaseState chaseState { get; private set; }
@@ -38,6 +39,7 @@ public class EnemyStateManager : MonoBehaviour
 
         animator = GetComponent<Animator>();
         attack = GetComponent<EnemyAttack>();
+        health = GetComponent<EnemyHealth>();
         agent =  GetComponent<NavMeshAgent>();
     }
 

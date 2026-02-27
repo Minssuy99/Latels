@@ -30,7 +30,7 @@ public class Area : MonoBehaviour
             playerAttack.SetEnemies(enemies);
 
             if(boss != null)
-                InGameUIManager.Instance.ShowBossHP(boss.attack);
+                InGameUIManager.Instance.ShowBossHP(boss.health);
 
             foreach(EnemyStateManager enemy in enemies)
             {

@@ -5,6 +5,7 @@ using TMPro;
 public class InGameUIManager : Singleton<InGameUIManager>
 {
     [Header("InGame Settings")]
+    public Transform damageHolder;
     [SerializeField] private CanvasGroup damageVignette;
     [SerializeField] private float VignetteFadeOutSpeed = 0.5f;
 
@@ -39,7 +40,7 @@ public class InGameUIManager : Singleton<InGameUIManager>
     [SerializeField] private Image currentBar;
     [SerializeField] private Color[] barColors;
     [SerializeField] private float hpPerBar = 200f;
-    private EnemyAttack boss;
+    private EnemyHealth boss;
 
     private void Start()
     {
@@ -118,7 +119,7 @@ public class InGameUIManager : Singleton<InGameUIManager>
         }
     }
 
-    public void ShowBossHP(EnemyAttack boss)
+    public void ShowBossHP(EnemyHealth boss)
     {
         this.boss = boss;
         BossHpUI.SetActive(true);
