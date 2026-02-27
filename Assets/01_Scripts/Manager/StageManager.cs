@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.AI.Navigation;
 using UnityEngine.InputSystem;
@@ -87,13 +88,16 @@ public class StageManager : Singleton<StageManager>
     private void SpawnDisplayCharacters()
     {
         CharacterData[] slots = GameManager.Instance.characterSlots;
+        List<Animator> displayCharacters = new List<Animator>();
 
         for (int i = 0; i < slots.Length; i++)
         {
             if (slots[i] == null) continue;
 
-            Instantiate(slots[i].displayPrefab, clearPlace.characterPosition[i]);
+            GameObject obj = Instantiate(slots[i].displayPrefab, clearPlace.characterPosition[i]);
+            displayCharacters.Add(obj.GetComponent<Animator>());
         }
+        clearDirector.SetDisplayAnimators(displayCharacters);
     }
 
     private void SpawnEnemies()

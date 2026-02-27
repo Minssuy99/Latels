@@ -194,33 +194,40 @@ public class CharacterSelectScreen : UIScreen
 
     private void OnListItemClicked(CharacterData data)
     {
+        List<int> changedSlots = new();
         CharacterData[] slots = GameManager.Instance.characterSlots;
         int existingSlot = Array.IndexOf(slots, data);
 
         if (existingSlot == selectedSlotIndex)
         {
+            changedSlots.Add(selectedSlotIndex);
             slots[selectedSlotIndex] = null;
         }
         else if (existingSlot >= 0)
         {
+            changedSlots.Add(existingSlot);
+            changedSlots.Add(selectedSlotIndex);
             slots[existingSlot] = slots[selectedSlotIndex];
             slots[selectedSlotIndex] = data;
         }
         else
         {
+            changedSlots.Add(selectedSlotIndex);
             slots[selectedSlotIndex] = data;
         }
 
-        RefreshCharacterModels();
+        RefreshCharacterModels(changedSlots);
         RefreshSelectedBadges();
     }
 
-    private void RefreshCharacterModels()
+    private void RefreshCharacterModels(List<int> changedSlots = null)
     {
         CharacterData[] slots = GameManager.Instance.characterSlots;
 
         for (int i = 0; i < slots.Length; i++)
         {
+            if (changedSlots != null && !changedSlots.Contains(i)) continue;
+
             if (displayModels[i] != null)
             {
                 Destroy(displayModels[i]);
@@ -229,6 +236,10 @@ public class CharacterSelectScreen : UIScreen
             if (slots[i] != null)
             {
                 displayModels[i] = Instantiate(slots[i].displayPrefab, characterPosition[i].transform);
+                if (changedSlots != null && changedSlots.Contains(i))
+                {
+                    displayModels[i].GetComponent<Animator>().SetTrigger("Select");
+                }
                 characterName[i].text = slots[i].charName;
                 emptyIcons[i].SetActive(false);
                 nameTags[i].SetActive(true);

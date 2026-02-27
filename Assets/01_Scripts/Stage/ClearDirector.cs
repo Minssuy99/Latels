@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 
 public class ClearDirector : MonoBehaviour
@@ -38,6 +39,7 @@ public class ClearDirector : MonoBehaviour
     [SerializeField] private GameObject inGameUI;
     [SerializeField] private float duration = 0.5f;
 
+    private List<Animator> displayCharacters = new ();
     private Transform startPoint;
     private Transform endPoint;
     private Camera cam;
@@ -88,6 +90,11 @@ public class ClearDirector : MonoBehaviour
         endPoint = cameraEndPoint;
     }
 
+    public void SetDisplayAnimators(List<Animator> displayCharacters)
+    {
+        this.displayCharacters = displayCharacters;
+    }
+
     IEnumerator ClearSequence()
     {
         TimeManager.Instance.StartHitStop();
@@ -126,6 +133,12 @@ public class ClearDirector : MonoBehaviour
 
         doorLeft.DOAnchorPosX(-doorLeft.rect.width, duration);
         doorRight.DOAnchorPosX(doorRight.rect.width, duration);
+        yield return new WaitForSecondsRealtime(duration);
+        foreach (Animator displayCharacter in displayCharacters)
+        {
+            displayCharacter.SetTrigger("Clear");
+        }
+
         yield return new WaitForSecondsRealtime(2f);
 
         cam.transform.DOMove(endPoint.position, 0.7f);
