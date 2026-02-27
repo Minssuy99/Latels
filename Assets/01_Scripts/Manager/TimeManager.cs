@@ -18,6 +18,7 @@ public class TimeManager : Singleton<TimeManager>
     private Bloom bloom;
     private float baseFixedDeltaTime;
     private bool isHitStop;
+    public bool IsBulletTime { get; private set; }
     private Animator playerAnimator;
 
     public float PlayerDelta => isHitStop ? Time.unscaledDeltaTime * playerHitStopScale : Time.unscaledDeltaTime;
@@ -88,6 +89,7 @@ public class TimeManager : Singleton<TimeManager>
         if (CanBulletTime)
         {
             bulletTimeCooldownTimer = bulletTimeCooldown;
+            IsBulletTime = true;
             bloom.tint.value = Color.red;
             Time.timeScale = slowScale;
             Time.fixedDeltaTime = baseFixedDeltaTime * slowScale;
@@ -97,6 +99,7 @@ public class TimeManager : Singleton<TimeManager>
             Time.timeScale = 1f;
             Time.fixedDeltaTime = baseFixedDeltaTime;
             animator.updateMode = AnimatorUpdateMode.Normal;
+            IsBulletTime = false;
             bloom.tint.value = Color.white;
         }
     }
