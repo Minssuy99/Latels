@@ -21,9 +21,15 @@ public class CharacterSetup : MonoBehaviour
             case CharacterRole.Main:
             {
                 GetComponent<CharacterController>().enabled = true;
+
+                foreach (Transform child in transform)
+                {
+                    child.gameObject.SetActive(true);
+                }
+
                 foreach (var component in GetComponentsInChildren<MonoBehaviour>())
                 {
-                    if (component != this)
+                    if (component != this && !(component is ISupportSkill))
                     {
                         component.enabled = true;
                     }

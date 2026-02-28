@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class PlayerSkillState : PlayerBaseState
 {
     public PlayerSkillState(PlayerStateManager player) : base(player)
@@ -8,16 +6,12 @@ public class PlayerSkillState : PlayerBaseState
 
     public override void Enter()
     {
-        player.isAttacking = false;
+        player.SetCanAttack(true);
+        player.SetIsAttacking(false);
         player.animator.SetLayerWeight(1, 0f);
         player.animator.SetLayerWeight(2, 0f);
         player.animator.ResetTrigger("Attack");
-
-        Vector3 direction = player.targetEnemy.transform.position - player.transform.position;
-        direction.y = 0;
-
-        player.transform.rotation = Quaternion.LookRotation(direction);
-        player.skill.OnSkillStart();
+        player.mainSkill.OnSkillStart();
     }
 
     public override void Update()
