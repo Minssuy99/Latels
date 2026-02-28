@@ -26,7 +26,7 @@ public class UIManager : Singleton<UIManager>
     {
         if (GameManager.Instance.returnToStage)
         {
-            GameManager.Instance.returnToStage = false;
+            GameManager.Instance.SetReturnToStage(false);
 
             lobbyScreen.OnExit(null);
             stageScreen.OnEnter(null);

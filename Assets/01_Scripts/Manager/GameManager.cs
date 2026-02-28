@@ -14,6 +14,11 @@ public class GameManager : Singleton<GameManager>
 
     public bool returnToStage;
 
+    public void SelectChapter(ChapterData data) => chapterData = data;
+    public void SelectStage(StageData data) => stageData = data;
+    public void SetReturnToStage(bool value) => returnToStage = value;
+    public void SetCharacterSlot(int index, CharacterData data) => characterSlots[index] = data;
+
     public void LoadGameScene(StageData stageData)
     {
         this.stageData = stageData;

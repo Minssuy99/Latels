@@ -113,7 +113,7 @@ public class CharacterSelectScreen : UIScreen
             return;
         }
 
-        GameManager.Instance.returnToStage = true;
+        GameManager.Instance.SetReturnToStage(true);
         GameManager.Instance.LoadGameScene(GameManager.Instance.stageData);
     }
 
@@ -201,19 +201,19 @@ public class CharacterSelectScreen : UIScreen
         if (existingSlot == selectedSlotIndex)
         {
             changedSlots.Add(selectedSlotIndex);
-            slots[selectedSlotIndex] = null;
+            GameManager.Instance.SetCharacterSlot(selectedSlotIndex, null);
         }
         else if (existingSlot >= 0)
         {
             changedSlots.Add(existingSlot);
             changedSlots.Add(selectedSlotIndex);
-            slots[existingSlot] = slots[selectedSlotIndex];
-            slots[selectedSlotIndex] = data;
+            GameManager.Instance.SetCharacterSlot(existingSlot, slots[selectedSlotIndex]);
+            GameManager.Instance.SetCharacterSlot(selectedSlotIndex, data);
         }
         else
         {
             changedSlots.Add(selectedSlotIndex);
-            slots[selectedSlotIndex] = data;
+            GameManager.Instance.SetCharacterSlot(selectedSlotIndex, data);
         }
 
         RefreshCharacterModels(changedSlots);

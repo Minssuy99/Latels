@@ -81,7 +81,7 @@ public class StageScreen : UIScreen
             int index = i;
             stage.GetComponent<Button>().onClick.AddListener(() =>
             {
-                GameManager.Instance.stageData = GameManager.Instance.chapterData.stages[index];
+                GameManager.Instance.SelectStage(GameManager.Instance.chapterData.stages[index]);
                 UIManager.Instance.Open(stageInfoPopup);
             });
 

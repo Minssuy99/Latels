@@ -59,7 +59,7 @@ public class ChapterScreen : UIScreen
             int index = i;
             chapter.GetComponent<Button>().onClick.AddListener(() =>
             {
-                GameManager.Instance.chapterData = chapters[index];
+                GameManager.Instance.SelectChapter(chapters[index]);
                 UIManager.Instance.Open(stageScreen);
             });
             chapter.GetComponent<ChapterItem>().Setup(chapters[i]);
