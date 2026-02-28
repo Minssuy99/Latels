@@ -24,6 +24,9 @@ public class TimeManager : Singleton<TimeManager>
     public float PlayerDelta => isHitStop ? Time.unscaledDeltaTime * playerHitStopScale : Time.unscaledDeltaTime;
     public float EnemyDelta => Time.deltaTime;
 
+    public bool IsSlowMotion => Time.timeScale < 1;
+    public bool IsNormalMotion => Time.timeScale >= 1;
+
     private void Start()
     {
         baseFixedDeltaTime = Time.fixedDeltaTime;

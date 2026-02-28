@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class EnemyHitState : EnemyBaseState
 {
     public EnemyHitState(EnemyStateManager enemy) : base(enemy)
@@ -9,7 +7,7 @@ public class EnemyHitState : EnemyBaseState
     public override void Enter()
     {
         enemy.agent.updatePosition = false;
-        if (Time.timeScale > 0.1f)
+        if (!TimeManager.Instance.IsSlowMotion)
         {
             enemy.transform.LookAt(enemy.playerPos);
         }

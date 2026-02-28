@@ -16,7 +16,7 @@ public class EnemyChaseState : EnemyBaseState
     {
         enemy.targetDistance = Vector3.Distance(enemy.transform.position, enemy.player.transform.position);
 
-        if (Time.timeScale > 0.1f)
+        if (!TimeManager.Instance.IsSlowMotion)
         {
             if (!enemy.rotationLocked)
             {

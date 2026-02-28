@@ -16,7 +16,7 @@ public class EnemyAttackState : EnemyBaseState
 
     public override void Update()
     {
-        if (Time.timeScale < 1f)
+        if (TimeManager.Instance.IsSlowMotion)
         {
             enemy.rotationLocked = true;
         }
