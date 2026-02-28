@@ -32,7 +32,7 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
     private void Awake()
     {
         player = GetComponent<PlayerStateManager>();
-        dodgeDetector = GetComponentInChildren<DodgeDetector>();
+        dodgeDetector = GetComponentInChildren<DodgeDetector>(true);
     }
 
     private void Update()
@@ -88,6 +88,7 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
         float moved = 0;
         while (moved < dashDistance)
         {
+            if (!player.IsDashing) yield break;
             float step = dashSpeed * TimeManager.Instance.PlayerDelta;
             player.characterController.Move(dashDirection * step);
             moved += step;
@@ -104,6 +105,6 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
         }
 
         yield return new WaitForSecondsRealtime(0.1f);
-        player.canAttack = true;
+        player.SetCanAttack(true);
     }
 }

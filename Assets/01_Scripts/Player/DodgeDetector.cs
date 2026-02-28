@@ -18,6 +18,6 @@ public class DodgeDetector : MonoBehaviour
     private void Update()
     {
         detectionTimer -= TimeManager.Instance.PlayerDelta;
-        isEnemyAttackNearby = detectionTimer > 0 && Time.timeScale >= 1f;
+        isEnemyAttackNearby = detectionTimer > 0 && TimeManager.Instance.IsNormalMotion;
     }
 }
