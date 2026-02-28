@@ -95,14 +95,26 @@ public class ClearDirector : MonoBehaviour
         this.displayCharacters = displayCharacters;
     }
 
-    IEnumerator ClearSequence()
+    private IEnumerator ClearSequence()
+    {
+        yield return HitStopPhase();
+        yield return FadePhase();
+        yield return DoorPhase();
+        yield return CameraPhase();
+        yield return ResultUIPhase();
+    }
+
+    private IEnumerator HitStopPhase()
     {
         TimeManager.Instance.StartHitStop();
         yield return new WaitForSecondsRealtime(1f);
 
         TimeManager.Instance.StopHitStop();
         yield return new WaitForSecondsRealtime(1f);
+    }
 
+    private IEnumerator FadePhase()
+    {
         inGameUI.SetActive(false);
         yield return new WaitForSecondsRealtime(1f);
 
@@ -110,7 +122,10 @@ public class ClearDirector : MonoBehaviour
         yield return new WaitForSecondsRealtime(1f);
         fadeImage.DOFade(1f, 0.75f).SetUpdate(true);
         yield return new WaitForSecondsRealtime(1.5f);
+    }
 
+    private IEnumerator DoorPhase()
+    {
         doorLeft.gameObject.SetActive(true);
         doorRight.gameObject.SetActive(true);
         clockImage.gameObject.SetActive(true);
@@ -125,7 +140,10 @@ public class ClearDirector : MonoBehaviour
             clockRight.gameObject.SetActive(true);
         });
         yield return new WaitForSecondsRealtime(1.75f);
+    }
 
+    private IEnumerator CameraPhase()
+    {
         cam.GetComponent<FollowCamera>().enabled = false;
         cam.transform.position = startPoint.position;
         cam.transform.rotation = startPoint.rotation;
@@ -144,7 +162,10 @@ public class ClearDirector : MonoBehaviour
         cam.transform.DOMove(endPoint.position, 0.7f);
         cam.transform.DORotate(endPoint.rotation.eulerAngles, 0.7f);
         yield return new WaitForSecondsRealtime(1.5f);
+    }
 
+    private IEnumerator ResultUIPhase()
+    {
         string stageName = GameManager.Instance.stageData.stageName;
         float currentExp = 4635;
         float maxExp = 6000;
