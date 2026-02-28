@@ -26,8 +26,8 @@ public class Area : MonoBehaviour
         {
             isEnter = true;
 
-            PlayerAttack playerAttack = other.GetComponent<PlayerAttack>();
-            playerAttack.SetEnemies(enemies);
+            TargetDetector targetDetector = other.GetComponent<TargetDetector>();
+            targetDetector.SetEnemies(enemies);
 
             if(boss != null)
                 InGameUIManager.Instance.ShowBossHP(boss.health);

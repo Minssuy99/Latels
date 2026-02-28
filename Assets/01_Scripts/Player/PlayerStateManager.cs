@@ -17,20 +17,21 @@ public class PlayerStateManager : MonoBehaviour, IBattleComponent
     public PlayerDash dash { get; private set; }
     public PlayerAttack attack  { get; private set; }
     public PlayerHealth health  { get; private set; }
-    public PlayerSkill skill { get;  private set; }
+    public PlayerMainSkill mainSkill { get;  private set; }
     public SupportSkill supportSkill { get;  private set; }
+    public TargetDetector targetDetector { get; private set; }
+    public LockOnController lockOnController { get; private set; }
 
-    public bool isHit { get; set; }
-    public bool isLockedOn { get; set; }
-    public bool isAttacking { get; set; }
-    public bool isAttackFinishing {get; set;}
-    public bool isInvincible { get; set; }
+    public bool isHit { get; private set; }
+    public bool isLockedOn { get; private set; }
+    public bool isAttacking { get; private set; }
+    public bool isAttackFinishing {get; private set;}
+    public bool isInvincible { get; private set; }
+    public bool canAttack { get; private set; } = true;
     public bool IsDead => currentState is PlayerDeadState;
     public bool IsDashing => currentState is PlayerDashState;
     public bool IsUsingSkill => currentState is PlayerSkillState;
     public bool IsSprinting => currentState is PlayerSprintState;
-
-    public bool canAttack { get; set; } = true;
 
     public EnemyStateManager targetEnemy { get; set; }
     public float targetDistance { get; set; }
@@ -52,8 +53,10 @@ public class PlayerStateManager : MonoBehaviour, IBattleComponent
         dash = GetComponent<PlayerDash>();
         attack = GetComponent<PlayerAttack>();
         health = GetComponent<PlayerHealth>();
-        skill =  GetComponent<PlayerSkill>();
+        mainSkill =  GetComponent<PlayerMainSkill>();
         supportSkill = GetComponent<SupportSkill>();
+        targetDetector = GetComponent<TargetDetector>();
+        lockOnController = GetComponent<LockOnController>();
 
         animator = GetComponent<Animator>();
         characterController = GetComponent<CharacterController>();
@@ -79,58 +82,11 @@ public class PlayerStateManager : MonoBehaviour, IBattleComponent
         currentState.Enter();
     }
 
-    public void UpdateAttackLayers()
-    {
-        float speed = 10f * TimeManager.Instance.PlayerDelta;
+    public void SetIsHit(bool  value) => isHit = value;
+    public void SetIsLockedOn(bool value) => isLockedOn = value;
+    public void SetIsAttacking(bool value) => isAttacking = value;
+    public void SetIsAttackFinishing(bool value) => isAttackFinishing = value;
+    public void SetIsInvincible(bool value) => isInvincible = value;
+    public void SetCanAttack(bool value) => canAttack = value;
 
-        if (isAttackFinishing)
-        {
-            if (animator.GetCurrentAnimatorStateInfo(1).normalizedTime >= 1.0f)
-            {
-                animator.SetLayerWeight(1, 0.0f);
-                animator.SetLayerWeight(2, 0.0f);
-                isAttackFinishing = false;
-                isAttacking = false;
-            }
-            else
-            {
-                bool isMoving = move.moveDirection.sqrMagnitude > 0.1f;
-                if (isMoving)
-                {
-                    animator.SetLayerWeight(1, Mathf.Lerp(animator.GetLayerWeight(1), 0.0f, speed));
-                    animator.SetLayerWeight(2, Mathf.Lerp(animator.GetLayerWeight(2), 1.0f, speed));
-                }
-                else
-                {
-                    animator.SetLayerWeight(1, Mathf.Lerp(animator.GetLayerWeight(1), 1.0f, speed));
-                    animator.SetLayerWeight(2, Mathf.Lerp(animator.GetLayerWeight(2), 0.0f, speed));
-                }
-            }
-            return;
-        }
-
-        if (isAttacking)
-        {
-            bool isMoving = move.moveDirection.sqrMagnitude > 0.1f;
-
-            if (isMoving)
-            {
-                animator.SetLayerWeight(1, Mathf.Lerp(animator.GetLayerWeight(1), 0.0f, speed));
-                animator.SetLayerWeight(2, Mathf.Lerp(animator.GetLayerWeight(2), 1.0f, speed));
-            }
-            else
-            {
-                animator.SetLayerWeight(1, Mathf.Lerp(animator.GetLayerWeight(1), 1.0f, speed));
-                animator.SetLayerWeight(2, Mathf.Lerp(animator.GetLayerWeight(2), 0.0f, speed));
-            }
-        }
-        else
-        {
-            if (!isAttackFinishing)
-            {
-                animator.SetLayerWeight(1, Mathf.Lerp(animator.GetLayerWeight(1), 0.0f, speed));
-                animator.SetLayerWeight(2, Mathf.Lerp(animator.GetLayerWeight(2), 0.0f, speed));
-            }
-        }
-    }
 }

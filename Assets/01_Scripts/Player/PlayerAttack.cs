@@ -1,96 +1,23 @@
-using UnityEngine;
-using System.Collections.Generic;
+ using Unity.VisualScripting;
+ using UnityEngine;
 
-public class PlayerAttack : MonoBehaviour
+public abstract class PlayerAttack : MonoBehaviour
 {
-    private List<EnemyStateManager> enemies = new ();
-    public List<EnemyStateManager> GetEnemies() => enemies;
-
     protected PlayerStateManager player;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         player = GetComponent<PlayerStateManager>();
     }
 
-    private void Update()
+    protected virtual void Update()
     {
         if (player.IsSprinting) return;
         if (player.IsDashing) return;
         if (!player.canAttack) return;
         if (player.IsUsingSkill) return;
 
-        player.targetDistance = SelectNearestEnemy();
-
-        UpdateLockOn();
         UpdateAttack();
-    }
-
-    private float SelectNearestEnemy()
-    {
-        if (player == null) return Mathf.Infinity;
-
-        float targetDistance = Mathf.Infinity;
-        player.targetEnemy = null;
-        if (enemies.Count > 0)
-        {
-            foreach (EnemyStateManager enemy in enemies)
-            {
-                if (enemy == null) continue;
-
-                float distance = Vector3.Distance(transform.position, enemy.transform.position);
-
-                if (distance < targetDistance)
-                {
-                    targetDistance = distance;
-                    player.targetEnemy = enemy;
-                }
-            }
-        }
-        else
-        {
-            player.targetEnemy = null;
-        }
-
-        return targetDistance;
-    }
-
-    private void UpdateLockOn()
-    {
-        if (player.targetEnemy != null)
-        {
-            if (player.targetDistance <= player.CharacterData.stats.lockOnRange)
-            {
-                player.isLockedOn = true;
-                player.animator.SetBool("isLockedOn", true);
-            }
-            else
-            {
-                if (player.isLockedOn)
-                {
-                    if (player.isAttacking)
-                    {
-                        player.isAttackFinishing = true;
-                        player.animator.ResetTrigger("Attack");
-                    }
-
-
-                    player.animator.SetBool("isLockedOn", false);
-                    player.isLockedOn = false;
-                }
-            }
-        }
-        else
-        {
-            if (player.isAttacking)
-            {
-                player.isAttackFinishing = true;
-                player.animator.ResetTrigger("Attack");
-            }
-
-            player.isLockedOn = false;
-            player.animator.SetBool("isLockedOn", false);
-        }
     }
 
     private void UpdateAttack()
@@ -99,47 +26,93 @@ public class PlayerAttack : MonoBehaviour
         {
             if (player.targetDistance <= player.CharacterData.stats.attackRange)
             {
-                player.isAttackFinishing = false;
-                player.isAttacking = true;
+                player.SetIsAttackFinishing(false);
+                player.SetIsAttacking(true);
                 ExecuteAttack();
             }
+
             return;
         }
 
         if (!player.targetEnemy)
         {
             player.animator.ResetTrigger("Attack");
-            player.isAttacking = false;
+            player.SetIsAttacking(false);
             return;
         }
 
         if (player.targetDistance <= player.CharacterData.stats.attackRange)
         {
-            player.isAttacking = true;
+            player.SetIsAttacking(true);
             ExecuteAttack();
         }
         else
         {
             if (player.isAttacking)
             {
-                player.isAttackFinishing = true;
-                player.animator.ResetTrigger("Attack");
+                OnTargetLost();
             }
-            player.isAttacking = false;
+            player.SetIsAttacking(false);
         }
     }
-
-    public void SetEnemies(List<EnemyStateManager> enemies)
+    public virtual void UpdateAttackLayers()
     {
-        this.enemies = enemies;
+        float speed = 10f * TimeManager.Instance.PlayerDelta;
+
+        if (player.isAttackFinishing)
+        {
+            player.animator.SetLayerWeight(1, Mathf.Lerp(player.animator.GetLayerWeight(1), 0.0f, speed));
+            player.animator.SetLayerWeight(2, Mathf.Lerp(player.animator.GetLayerWeight(2), 0.0f, speed));
+
+            if (player.animator.GetLayerWeight(1) < 0.01f && player.animator.GetLayerWeight(2) < 0.01f)
+            {
+                player.animator.SetLayerWeight(1, 0f);
+                player.animator.SetLayerWeight(2, 0f);
+                player.SetIsAttackFinishing(false);
+                player.SetIsAttacking(false);
+            }
+            return;
+        }
+
+        if (player.isAttacking)
+        {
+            bool isMoving = player.move.moveDirection.sqrMagnitude > 0.1f;
+
+            if (isMoving)
+            {
+                player.animator.SetLayerWeight(1, Mathf.Lerp(player.animator.GetLayerWeight(1), 0.0f, speed));
+                player.animator.SetLayerWeight(2, Mathf.Lerp(player.animator.GetLayerWeight(2), 1.0f, speed));
+            }
+            else
+            {
+                player.animator.SetLayerWeight(1, Mathf.Lerp(player.animator.GetLayerWeight(1), 1.0f, speed));
+                player.animator.SetLayerWeight(2, Mathf.Lerp(player.animator.GetLayerWeight(2), 0.0f, speed));
+            }
+        }
+        else
+        {
+            if (!player.isAttackFinishing)
+            {
+                player.animator.SetLayerWeight(1, Mathf.Lerp(player.animator.GetLayerWeight(1), 0.0f, speed));
+                player.animator.SetLayerWeight(2, Mathf.Lerp(player.animator.GetLayerWeight(2), 0.0f, speed));
+            }
+        }
+    }
+    public virtual bool OnTargetLost()
+    {
+        player.SetIsAttackFinishing(true);
+        player.animator.ResetTrigger("Attack");
+        return true;
+    }
+
+    public virtual void ExecuteAttack()
+    {
+        player.animator.SetTrigger("Attack");
     }
 
     private void OnDrawGizmosSelected()
     {
         if (player.CharacterData == null) return;
-
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, player.CharacterData.stats.lockOnRange);
 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, player.CharacterData.stats.attackRange);
@@ -149,10 +122,5 @@ public class PlayerAttack : MonoBehaviour
 
         Gizmos.color = Color.yellow;
         Gizmos.DrawLine(transform.position, player.targetEnemy.transform.position);
-    }
-
-    public virtual void ExecuteAttack()
-    {
-        player.animator.SetTrigger("Attack");
     }
 }

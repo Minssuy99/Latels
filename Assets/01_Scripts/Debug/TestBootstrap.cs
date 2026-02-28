@@ -50,6 +50,6 @@ public class TestBootstrap : MonoBehaviour
             enemies.Add(enemy);
         }
 
-        playerObj.GetComponent<PlayerAttack>().SetEnemies(enemies);
+        playerObj.GetComponent<TargetDetector>().SetEnemies(enemies);
     }
 }
