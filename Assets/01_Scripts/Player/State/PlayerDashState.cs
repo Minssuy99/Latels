@@ -6,8 +6,8 @@ public class PlayerDashState : PlayerBaseState
 
     public override void Enter()
     {
-        player.canAttack = false;
-        player.isAttacking = false;
+        player.SetCanAttack(false);
+        player.SetIsAttacking(false);
 
         player.animator.SetLayerWeight(1, 0f);
         player.animator.SetLayerWeight(2, 0f);

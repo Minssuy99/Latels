@@ -6,10 +6,9 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
     private PlayerStateManager player;
 
     [SerializeField] private float moveSpeed = 4.5f;
-    [SerializeField] private float SprintSpeed = 6f;
+    [SerializeField] private float sprintSpeed = 6f;
     [SerializeField] private float rotationSpeed = 15f;
-
-    [HideInInspector] public Vector3 moveDirection;
+    public Vector3 moveDirection { get; private set; }
     private Vector3 lastDirection;
     private Quaternion targetRotation;
     private bool wasDiagonal;
@@ -61,7 +60,7 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
         if (moveDirection.sqrMagnitude > 0f)
         {
             CheckDirection();
-            float speed = isRunning ? SprintSpeed : moveSpeed;
+            float speed = isRunning ? sprintSpeed : moveSpeed;
             player.characterController.Move(lastDirection * (speed * TimeManager.Instance.PlayerDelta));
         }
     }
@@ -113,11 +112,6 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
         }
         else
         {
-            if (player.isAttackFinishing == false)
-            {
-                player.animator.SetLayerWeight(1, 0.0f);
-                player.animator.SetLayerWeight(2, 0.0f);
-            }
             player.animator.SetFloat("Velocity", moveDirection.magnitude);
         }
     }

@@ -11,7 +11,7 @@ public class PlayerDeadState : PlayerBaseState
 
         player.animator.SetTrigger("Die");
 
-        player.isAttacking = false;
+        player.SetIsAttacking(false);
         player.attack.enabled = false;
         player.health.enabled = false;
     }

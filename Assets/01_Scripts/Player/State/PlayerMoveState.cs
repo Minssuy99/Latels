@@ -21,7 +21,7 @@ public class PlayerMoveState : PlayerBaseState
         player.move.HandleRotation();
         player.move.ApplyRotation();
         player.move.UpdateAnimParameter();
-        player.UpdateAttackLayers();
+        player.attack.UpdateAttackLayers();
     }
 
     public override void Exit()

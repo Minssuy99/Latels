@@ -8,8 +8,8 @@ public class PlayerSprintState : PlayerBaseState
 
     public override void Enter()
     {
-        player.isLockedOn = false;
-        player.isAttacking = false;
+        player.SetIsLockedOn(false);
+        player.SetIsAttacking(false);
         player.animator.SetBool("isLockedOn", false);
     }
 
