@@ -16,7 +16,7 @@ public class CharacterListItem : MonoBehaviour
     public void Setup(CharacterData data, Action<CharacterData> onClick)
     {
         Data = data;
-        profileImage.sprite = data.profileImage;
+        profileImage.sprite = data.sprites.profileImage;
         nameText.text = data.charName;
 
         button = GetComponent<Button>();
