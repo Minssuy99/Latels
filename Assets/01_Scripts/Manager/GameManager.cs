@@ -33,22 +33,17 @@ public class GameManager : Singleton<GameManager>
     IEnumerator LoadSceneCoroutine(string sceneName)
     {
         FadeManager.Instance.BlackFadeIn();
-        yield return new WaitForSecondsRealtime(1.5f);
+        yield return new WaitForSecondsRealtime(0.5f);
         DOTween.KillAll();
-
-        FadeManager.Instance.ShowProgressBar();
-        yield return new WaitForSecondsRealtime(1f);
 
         AsyncOperation op = SceneManager.LoadSceneAsync(sceneName);
 
-        while (!op.isDone)
+        while (op != null && !op.isDone)
         {
-            FadeManager.Instance.SetProgress(op.progress / 0.9f);
             yield return null;
         }
+
         yield return new WaitForSecondsRealtime(0.5f);
-        FadeManager.Instance.HideProgressBar();
-        yield return new WaitForSecondsRealtime(1.5f);
         FadeManager.Instance.BlackFadeOut();
     }
 }
