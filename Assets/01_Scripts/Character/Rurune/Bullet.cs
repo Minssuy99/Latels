@@ -10,6 +10,7 @@ public class Bullet : MonoBehaviour
     private float elapsedTime;
     private Vector3 moveDirection;
     private float damage;
+    private RaycastHit[] hitBuffer = new RaycastHit[5];
 
     public void Init(Transform target, float damage, Vector3 shooterForward)
     {
@@ -38,16 +39,16 @@ public class Bullet : MonoBehaviour
 
         float moveDistance = speed * TimeManager.Instance.PlayerDelta;
 
-        RaycastHit[] hits = Physics.RaycastAll(transform.position, moveDirection, moveDistance);
-        foreach (RaycastHit hit in hits)
+        int count = Physics.RaycastNonAlloc(transform.position, moveDirection, hitBuffer, moveDistance);
+        for (int i = 0; i < count; i++)
         {
-            if (hit.collider.CompareTag("Enemy"))
+            if (hitBuffer[i].collider.CompareTag(GameTags.Enemy))
             {
-                hit.collider.GetComponent<IDamageable>().TakeDamage(damage, transform.position);
+                hitBuffer[i].collider.GetComponent<IDamageable>().TakeDamage(damage, transform.position);
 
                 GameObject hitVFX = PoolManager.Instance.Get(hitEffect);
-                hitVFX.transform.position = hit.collider.transform.position + Vector3.up;
-                hitVFX.transform.rotation = Quaternion.LookRotation(-moveDirection) * Quaternion.Euler(90, 0, 0);;
+                hitVFX.transform.position = hitBuffer[i].collider.transform.position + Vector3.up;
+                hitVFX.transform.rotation = Quaternion.LookRotation(-moveDirection) * Quaternion.Euler(90, 0, 0);
                 PoolManager.Instance.Return(hitVFX, 2f);
             }
         }

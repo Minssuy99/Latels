@@ -6,12 +6,14 @@ public class RuruneAttack : PlayerAttack, IBattleComponent
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private Transform[] muzzlePositions;
     [SerializeField] private float animRigChangeSpeed = 10f;
+    [SerializeField] private float meleeHitRange = 0.1f;
 
     private Rig aimRig;
     private int muzzleIndex;
-    public ParticleSystem[] muzzleEffects { get; private set; }
+    private ParticleSystem[] muzzleEffects;
+    public Transform[] MuzzlePosition => muzzlePositions;
     private float lastShootTime;
-    private int count = 0;
+    private int count;
 
     protected override void Awake()
     {
@@ -32,8 +34,13 @@ public class RuruneAttack : PlayerAttack, IBattleComponent
         if (Time.unscaledTime - lastShootTime < 0.05f) return;
         lastShootTime = Time.unscaledTime;
 
+        if (player.targetDistance < meleeHitRange)
+        {
+            player.targetEnemy.GetComponent<IDamageable>().TakeDamage(player.CharacterData.stats.damage, transform.position);
+        }
+
         count++;
-        player.animator.SetInteger("AttackCount", count);
+        player.animator.SetInteger(AnimHash.AttackCount, count);
 
         muzzleEffects[muzzleIndex].Play();
 
@@ -47,27 +54,26 @@ public class RuruneAttack : PlayerAttack, IBattleComponent
     public override void ExecuteAttack()
     {
         if (count >= 12) return;
-        player.animator.SetTrigger("Attack");
+        player.animator.SetTrigger(AnimHash.Attack);
     }
 
     public void Reload()
     {
-        Debug.Log("Reload");
         count = 0;
-        player.animator.SetInteger("AttackCount", 0);
+        player.animator.SetInteger(AnimHash.AttackCount, 0);
     }
 
     public override bool OnTargetLost()
     {
         player.SetIsAttacking(false);
         player.SetIsAttackFinishing(false);
-        player.animator.ResetTrigger("Attack");
+        player.animator.ResetTrigger(AnimHash.Attack);
         return true;
     }
 
     private void LateUpdate()
     {
-        bool shouldAim = (player.isAttacking || player.isAttackFinishing) && player.move.moveDirection.sqrMagnitude > 0;
+        bool shouldAim = (player.isAttacking || player.isAttackFinishing) && player.move.MoveDirection.sqrMagnitude > 0;
 
         if (shouldAim)
         {
