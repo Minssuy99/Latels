@@ -1,15 +1,21 @@
 using UnityEngine;
 using System.Collections;
+using DG.Tweening;
 
 public class EnemyHitEffect : MonoBehaviour
 {
     private Renderer[] renderers;
     private Material[][] originalMaterials;
     [SerializeField] private Material HitMaterial;
+    [SerializeField] private Transform rootModel;
+    [SerializeField] private float shakeStrength = 0.2f;
+    [SerializeField] private float shakeDuration = 0.2f;
+    [SerializeField] private int shakeVibrato = 1;
 
     private void Awake()
     {
         renderers = GetComponentsInChildren<Renderer>();
+        HitMaterial = new Material(HitMaterial);
         originalMaterials = new Material[renderers.Length][];
 
         for (int i = 0; i < renderers.Length; i++)
@@ -18,7 +24,18 @@ public class EnemyHitEffect : MonoBehaviour
         }
     }
 
-    public void HitFlash()
+    public void PlayHitEffect()
+    {
+        HitShake();
+        HitFlash();
+    }
+
+    private void HitShake()
+    {
+        rootModel.DOShakePosition(shakeDuration, new Vector3(shakeStrength, 0, shakeStrength), shakeVibrato).SetUpdate(UpdateType.Late);
+    }
+
+    private void HitFlash()
     {
         for (int i = 0; i < renderers.Length; i++)
         {
@@ -35,7 +52,7 @@ public class EnemyHitEffect : MonoBehaviour
         StartCoroutine(RestoreMaterials());
     }
 
-    IEnumerator RestoreMaterials()
+    private IEnumerator RestoreMaterials()
     {
         HitMaterial.SetColor("_BaseColor", Color.red);
         yield return new WaitForSecondsRealtime(0.1f);
