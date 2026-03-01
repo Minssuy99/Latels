@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class ClearPlace : MonoBehaviour
+public class ResultPoint : MonoBehaviour
 {
     [Header("Camera Settings")]
     public Transform cameraPoint;

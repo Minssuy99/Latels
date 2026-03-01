@@ -154,7 +154,7 @@ public class ClearDirector : MonoBehaviour
         yield return new WaitForSecondsRealtime(duration);
         foreach (Animator displayCharacter in displayCharacters)
         {
-            displayCharacter.SetTrigger("Clear");
+            displayCharacter.SetTrigger(AnimHash.Clear);
         }
 
         yield return new WaitForSecondsRealtime(2f);
