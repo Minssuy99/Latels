@@ -10,7 +10,7 @@ public class FollowCamera : MonoBehaviour
         this.player = player;
     }
 
-    private void Update()
+    private void LateUpdate()
     {
         if (!player) return;
 
