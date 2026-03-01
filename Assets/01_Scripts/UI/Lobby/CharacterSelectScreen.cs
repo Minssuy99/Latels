@@ -238,7 +238,7 @@ public class CharacterSelectScreen : UIScreen
                 displayModels[i] = Instantiate(slots[i].displayPrefab, characterPosition[i].transform);
                 if (changedSlots != null && changedSlots.Contains(i))
                 {
-                    displayModels[i].GetComponent<Animator>().SetTrigger("Select");
+                    displayModels[i].GetComponent<Animator>().SetTrigger(AnimHash.Select);
                 }
                 characterName[i].text = slots[i].charName;
                 emptyIcons[i].SetActive(false);
