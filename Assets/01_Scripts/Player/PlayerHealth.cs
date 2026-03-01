@@ -1,9 +1,12 @@
+using System;
 using UnityEngine;
 
 public class PlayerHealth : MonoBehaviour, IDamageable, IBattleComponent
 {
     public float HP { get; private set; }
     public float MaxHP => player.CharacterData.stats.health;
+
+    public event Action<float, Vector3> OnDamaged;
 
     private float hitCooldown;
     private PlayerStateManager player;
@@ -24,22 +27,22 @@ public class PlayerHealth : MonoBehaviour, IDamageable, IBattleComponent
         {
             hitCooldown -= TimeManager.Instance.PlayerDelta;
             if (hitCooldown <= 0)
-                player.isHit = false;
+                player.SetIsHit(false);
         }
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage, Vector3 attackerPos)
     {
         if (player.IsDashing) return;
         if (player.IsUsingSkill) return;
         if (player.isInvincible) return;
 
         if (hitCooldown > 0) return;
-        player.isHit = true;
+        player.SetIsHit(true);
         hitCooldown = 0.1f;
 
         HP -= damage;
-        InGameUIManager.Instance.ShowDamageEffect();
+        OnDamaged?.Invoke(damage, attackerPos);
 
         if (HP <= 0)
         {
@@ -51,10 +54,10 @@ public class PlayerHealth : MonoBehaviour, IDamageable, IBattleComponent
     {
         if (player.IsDead) return;
 
-        if (other.CompareTag("EnemyHitbox"))
+        if (other.CompareTag(GameTags.EnemyHitbox))
         {
             EnemyStateManager enemy = other.GetComponentInParent<EnemyStateManager>();
-            TakeDamage(enemy.Data.stats.damage);
+            TakeDamage(enemy.Data.stats.damage, enemy.transform.position);
         }
     }
 }

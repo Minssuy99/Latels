@@ -1,17 +1,17 @@
+using System;
 using UnityEngine;
 
 public class EnemyHealth : MonoBehaviour, IDamageable
 {
-    private EnemyStateManager enemy;
-    private EnemyHitEffect hitEffect;
-    private CapsuleCollider capsuleCollider;
-
+    [SerializeField] private float hitCooldownDuration = 0.075f;
     public float HP { get; private set; }
     public float MaxHP => enemy.Data.stats.health;
     public int hitCount { get; set; }
-
-    [SerializeField] private float hitCooldownDuration = 0.075f;
+    public event Action<float, Vector3> OnDamaged;
     private float hitCooldown;
+    private EnemyStateManager enemy;
+    private EnemyHitEffect hitEffect;
+    private CapsuleCollider capsuleCollider;
 
     private void Awake()
     {
@@ -35,7 +35,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("PlayerHitbox")) return;
+        if (!other.CompareTag(GameTags.PlayerHitbox)) return;
 
         CharacterSetup setup = other.gameObject.GetComponentInParent<CharacterSetup>();
         TakeDamage(setup.Data.stats.damage, setup.transform.position);
@@ -50,14 +50,11 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     {
         if (hitCooldown > 0) return;
 
-        hitEffect.HitFlash();
+        hitEffect.PlayHitEffect();
         HP -= damage;
         hitCooldown = hitCooldownDuration;
 
-        GameObject prefab = Resources.Load<GameObject>("Damage");
-        GameObject obj = PoolManager.Instance.Get(prefab);
-        obj.transform.SetParent(InGameUIManager.Instance.damageHolder, false);
-        obj.GetComponent<Damage>().SetDamage(damage, transform, attackerPos, DamageType.Enemy);
+        OnDamaged?.Invoke(damage, attackerPos);
 
         if (HP <= 0)
         {
@@ -65,7 +62,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
             return;
         }
 
-        if (Time.timeScale < 1f)
+        if (TimeManager.Instance.IsSlowMotion)
         {
             enemy.attack.DisableAllHitboxes();
             return;
