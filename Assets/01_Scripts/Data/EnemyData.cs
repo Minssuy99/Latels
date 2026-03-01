@@ -14,6 +14,7 @@ public class EnemyStats
     public float moveSpeed;
     public float health;
     public float damage;
+    public int attackTypeCount;
     public float attackRange;
     public float attackCooldown;
     public int superArmorCount;
