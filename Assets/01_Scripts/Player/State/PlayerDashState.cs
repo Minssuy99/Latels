@@ -7,21 +7,24 @@ public class PlayerDashState : PlayerBaseState
     public override void Enter()
     {
         player.SetCanAttack(false);
+        player.SetIsLockedOn(false);
+        player.animator.SetBool(AnimHash.IsLockedOn, false);
         player.SetIsAttacking(false);
+        player.animator.applyRootMotion = false;
 
         player.animator.SetLayerWeight(1, 0f);
         player.animator.SetLayerWeight(2, 0f);
-        player.animator.SetTrigger("Dash");
+        player.animator.SetTrigger(AnimHash.Dash);
         player.StartCoroutine(player.dash.DashCoroutine());
     }
 
     public override void Update()
     {
-        player.animator.SetFloat("Velocity", player.move.moveDirection.magnitude);
+        player.animator.SetFloat(AnimHash.Velocity, player.move.MoveDirection.magnitude);
     }
 
     public override void Exit()
     {
-
+        player.animator.applyRootMotion = true;
     }
 }

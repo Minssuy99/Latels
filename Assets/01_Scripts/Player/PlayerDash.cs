@@ -4,26 +4,22 @@ using UnityEngine.InputSystem;
 
 public class PlayerDash : MonoBehaviour, IBattleComponent
 {
-    // 참조
     private PlayerStateManager player;
     private DodgeDetector dodgeDetector;
 
-    // 대쉬 설정
     [SerializeField] private float dashDuration = 0.4f;
     [SerializeField] private float chargeTime = 2f;
     [SerializeField] private float reuseCooldown = 0.8f;
     public float dashSpeed = 8f;
 
-    // 대쉬 스택
     private int maxStack = 3;
     private int currentStack = 3;
     private float chargeTimer;
     private float reuseTimer;
+    private Vector3 dashDirection;
 
-    // 런타임
-    [HideInInspector] public Vector3 dashDirection;
+    private bool dashBuffered;
 
-    // UI용 프로퍼티
     public int CurrentStack => currentStack;
     public float ChargeFillAmount => chargeTimer / chargeTime;
     public bool IsReuseDelay => reuseTimer > 0f;
@@ -58,12 +54,18 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
     {
         if (player.IsDashing) return;
         if (player.IsDead) return;
-        if (player.IsUsingSkill) return;
+        if (player.IsUsingSkill)
+        {
+            float normalizedTime = player.animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
+            if (normalizedTime >= 0.8f)
+                dashBuffered = true;
+            return;
+        }
         if (currentStack < 1 || reuseTimer > 0) return;
 
-        if (player.move.moveDirection.sqrMagnitude > 0f)
+        if (player.move.MoveDirection.sqrMagnitude > 0f)
         {
-            dashDirection = player.move.moveDirection;
+            dashDirection = player.move.MoveDirection;
             transform.rotation = Quaternion.LookRotation(dashDirection);
         }
         else
@@ -95,7 +97,7 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
             yield return null;
         }
 
-        if (player.move.moveDirection.sqrMagnitude > 0f)
+        if (player.move.MoveDirection.sqrMagnitude > 0f)
         {
             player.ChangeState(player.sprintState);
         }
@@ -106,5 +108,26 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
 
         yield return new WaitForSecondsRealtime(0.1f);
         player.SetCanAttack(true);
+    }
+
+    public bool ConsumeDashBuffer()
+    {
+        if (!dashBuffered) return false;
+        dashBuffered = false;
+        if (currentStack < 1 || reuseTimer > 0) return false;
+
+        if (player.move.MoveDirection.sqrMagnitude > 0f)
+        {
+            dashDirection = player.move.MoveDirection;
+            transform.rotation = Quaternion.LookRotation(dashDirection);
+        }
+        else
+        {
+            dashDirection = transform.forward;
+        }
+
+        currentStack--;
+        reuseTimer = reuseCooldown;
+        return true;
     }
 }

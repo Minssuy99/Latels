@@ -1,5 +1,4 @@
- using Unity.VisualScripting;
- using UnityEngine;
+using UnityEngine;
 
 public abstract class PlayerAttack : MonoBehaviour
 {
@@ -36,7 +35,7 @@ public abstract class PlayerAttack : MonoBehaviour
 
         if (!player.targetEnemy)
         {
-            player.animator.ResetTrigger("Attack");
+            player.animator.ResetTrigger(AnimHash.Attack);
             player.SetIsAttacking(false);
             return;
         }
@@ -76,7 +75,7 @@ public abstract class PlayerAttack : MonoBehaviour
 
         if (player.isAttacking)
         {
-            bool isMoving = player.move.moveDirection.sqrMagnitude > 0.1f;
+            bool isMoving = player.move.MoveDirection.sqrMagnitude > 0.1f;
 
             if (isMoving)
             {
@@ -101,13 +100,13 @@ public abstract class PlayerAttack : MonoBehaviour
     public virtual bool OnTargetLost()
     {
         player.SetIsAttackFinishing(true);
-        player.animator.ResetTrigger("Attack");
+        player.animator.ResetTrigger(AnimHash.Attack);
         return true;
     }
 
     public virtual void ExecuteAttack()
     {
-        player.animator.SetTrigger("Attack");
+        player.animator.SetTrigger(AnimHash.Attack);
     }
 
     private void OnDrawGizmosSelected()

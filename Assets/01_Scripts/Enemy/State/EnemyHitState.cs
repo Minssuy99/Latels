@@ -12,7 +12,7 @@ public class EnemyHitState : EnemyBaseState
             enemy.transform.LookAt(enemy.playerPos);
         }
 
-        enemy.animator.SetTrigger("Hit");
+        enemy.animator.SetTrigger(AnimHash.Hit);
         enemy.attack.DisableAllHitboxes();
     }
 

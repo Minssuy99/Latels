@@ -9,9 +9,9 @@ public class EnemyAttackState : EnemyBaseState
     public override void Enter()
     {
         enemy.agent.updatePosition = false;
-        enemy.attack.attackType = Random.Range(1, 3);
-        enemy.animator.SetInteger("AttackType", enemy.attack.attackType);
-        enemy.animator.SetTrigger("Attack");
+        enemy.attack.attackType = Random.Range(0, enemy.Data.stats.attackTypeCount);
+        enemy.animator.SetInteger(AnimHash.AttackType, enemy.attack.attackType);
+        enemy.animator.SetTrigger(AnimHash.Attack);
     }
 
     public override void Update()

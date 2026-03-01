@@ -52,7 +52,7 @@ public class ShinanoMainSkill : PlayerMainSkill
 
         if (enemy != null && enemy.enabled)
         {
-            enemy.animator.SetTrigger("Hit");
+            enemy.animator.SetTrigger(AnimHash.Hit);
         }
     }
 

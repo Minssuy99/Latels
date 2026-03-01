@@ -9,7 +9,7 @@ public class EnemyChaseState : EnemyBaseState
     public override void Enter()
     {
         enemy.agent.isStopped = false;
-        enemy.animator.SetBool("isRunning", true);
+        enemy.animator.SetBool(AnimHash.IsRunning, true);
     }
 
     public override void Update()
@@ -27,7 +27,7 @@ public class EnemyChaseState : EnemyBaseState
         if (enemy.targetDistance <= enemy.agent.stoppingDistance)
         {
             enemy.agent.isStopped = true;
-            enemy.animator.SetBool("isRunning", false);
+            enemy.animator.SetBool(AnimHash.IsRunning, false);
 
             enemy.attack.attackCooldown -= TimeManager.Instance.EnemyDelta;
 
@@ -41,13 +41,13 @@ public class EnemyChaseState : EnemyBaseState
         {
             enemy.agent.isStopped = false;
             enemy.agent.SetDestination(enemy.player.transform.position);
-            enemy.animator.SetBool("isRunning", true);
+            enemy.animator.SetBool(AnimHash.IsRunning, true);
         }
     }
 
     public override void Exit()
     {
         enemy.agent.isStopped = true;
-        enemy.animator.SetBool("isRunning", false);
+        enemy.animator.SetBool(AnimHash.IsRunning, false);
     }
 }

@@ -6,7 +6,7 @@ public class EnemyReadyState : EnemyBaseState
 
     public override void Enter()
     {
-        enemy.animator.SetBool("isReady", true);
+        enemy.animator.SetBool(AnimHash.IsReady, true);
     }
 
     public override void Update()

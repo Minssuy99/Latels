@@ -10,12 +10,12 @@ public class PlayerSprintState : PlayerBaseState
     {
         player.SetIsLockedOn(false);
         player.SetIsAttacking(false);
-        player.animator.SetBool("isLockedOn", false);
+        player.animator.SetBool(AnimHash.IsLockedOn, false);
     }
 
     public override void Update()
     {
-        if (player.move.moveDirection.sqrMagnitude <= 0f)
+        if (player.move.MoveDirection.sqrMagnitude <= 0f)
         {
             player.ChangeState(player.idleState);
             return;

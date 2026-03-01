@@ -52,12 +52,12 @@
               transform.rotation = Quaternion.LookRotation(direction);
           }
 
-          player.animator.SetTrigger("Skill");
+          player.animator.SetTrigger(AnimHash.Skill);
       }
 
       protected void EndSkill()
       {
-          if (player.move.moveDirection.sqrMagnitude > 0)
+          if (player.move.MoveDirection.sqrMagnitude > 0)
           {
               player.ChangeState(player.moveState);
           }

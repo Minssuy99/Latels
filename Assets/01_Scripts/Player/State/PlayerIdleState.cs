@@ -11,7 +11,7 @@ public class PlayerIdleState : PlayerBaseState
 
     public override void Update()
     {
-        if (player.move.moveDirection.sqrMagnitude > 0f)
+        if (player.move.MoveDirection.sqrMagnitude > 0f)
         {
             player.ChangeState(player.moveState);
             return;

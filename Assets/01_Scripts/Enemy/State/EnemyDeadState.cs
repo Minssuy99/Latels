@@ -8,7 +8,7 @@ public class EnemyDeadState : EnemyBaseState
     {
         enemy.area?.RemoveEnemy(enemy);
         enemy.attack.DisableAllHitboxes();
-        enemy.animator.SetTrigger("Die");
+        enemy.animator.SetTrigger(AnimHash.Die);
         enemy.transform.LookAt(enemy.playerPos);
         enemy.StartCoroutine(enemy.SinkAndDestroy());
 

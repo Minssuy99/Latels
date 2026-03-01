@@ -29,7 +29,13 @@ public class CharacterSetup : MonoBehaviour
 
                 foreach (var component in GetComponentsInChildren<MonoBehaviour>())
                 {
-                    if (component != this && !(component is ISupportSkill))
+                    if (component is ISupportSkill)
+                    {
+                        component.enabled = false;
+                        continue;
+                    }
+
+                    if (component != this)
                     {
                         component.enabled = true;
                     }

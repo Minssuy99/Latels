@@ -9,7 +9,7 @@ public class DodgeDetector : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (other.CompareTag("EnemyDangerZone"))
+        if (other.CompareTag(GameTags.EnemyDangerZone))
         {
             detectionTimer = detectionDuration;
         }

@@ -5,14 +5,16 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
 {
     private PlayerStateManager player;
 
+    private VariableJoystick joystick;
     [SerializeField] private float moveSpeed = 4.5f;
     [SerializeField] private float sprintSpeed = 6f;
     [SerializeField] private float rotationSpeed = 15f;
-    public Vector3 moveDirection { get; private set; }
+    public Vector3 MoveDirection { get; private set; }
     private Vector3 lastDirection;
     private Quaternion targetRotation;
     private bool wasDiagonal;
 
+    private Vector2 keyboardInput;
     private float velocityXSmooth;
     private float velocityZSmooth;
 
@@ -30,6 +32,16 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
 
     private void Update()
     {
+        if (joystick && joystick.Direction.sqrMagnitude > 0.01f)
+        {
+            Vector2 dir = joystick.Direction.normalized;
+            MoveDirection = new Vector3(dir.x, 0, dir.y);
+        }
+        else
+        {
+            MoveDirection = new Vector3(keyboardInput.x, 0, keyboardInput.y);
+        }
+
         if (player.characterController.isGrounded)
         {
             groundY = transform.position.y;
@@ -51,13 +63,12 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
 
     public void OnMove(InputValue value)
     {
-        Vector2 input = value.Get<Vector2>();
-        moveDirection = new Vector3(input.x, 0, input.y);
+        keyboardInput = value.Get<Vector2>();
     }
 
     public void HandleMovement(bool isRunning = false)
     {
-        if (moveDirection.sqrMagnitude > 0f)
+        if (MoveDirection.sqrMagnitude > 0f)
         {
             CheckDirection();
             float speed = isRunning ? sprintSpeed : moveSpeed;
@@ -69,7 +80,7 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
     {
         if (player.IsDashing) return;
 
-        if (player.isLockedOn && player.targetEnemy != null)
+        if (player.isLockedOn && player.targetEnemy)
         {
             Vector3 enemyDirection = player.targetEnemy.transform.position - transform.position;
             enemyDirection.y = 0f;
@@ -77,9 +88,9 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
         }
         else
         {
-            if (moveDirection.sqrMagnitude > 0f)
+            if (MoveDirection.sqrMagnitude > 0f)
             {
-                targetRotation = Quaternion.LookRotation(moveDirection);
+                targetRotation = Quaternion.LookRotation(MoveDirection);
             }
         }
     }
@@ -87,7 +98,7 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
     {
         if (player.isLockedOn)
         {
-            Vector3 worldInput = moveDirection;
+            Vector3 worldInput = MoveDirection;
 
             if (worldInput.sqrMagnitude > 0.1f)
             {
@@ -99,20 +110,20 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
             float targetX = localInput.x;
             float targetZ = localInput.z;
 
-            float currentX = player.animator.GetFloat("VelocityX");
-            float currentZ = player.animator.GetFloat("VelocityZ");
+            float currentX = player.animator.GetFloat(AnimHash.VelocityX);
+            float currentZ = player.animator.GetFloat(AnimHash.VelocityZ);
 
             float smoothTime = 0.1f;
             float smoothX = Mathf.SmoothDamp(currentX, targetX, ref velocityXSmooth, smoothTime, Mathf.Infinity, TimeManager.Instance.PlayerDelta);
             float smoothZ = Mathf.SmoothDamp(currentZ, targetZ, ref velocityZSmooth, smoothTime, Mathf.Infinity, TimeManager.Instance.PlayerDelta);
 
-            player.animator.SetFloat("VelocityX", smoothX);
-            player.animator.SetFloat("VelocityZ", smoothZ);
-            player.animator.SetFloat("Velocity", moveDirection.magnitude);
+            player.animator.SetFloat(AnimHash.VelocityX, smoothX);
+            player.animator.SetFloat(AnimHash.VelocityZ, smoothZ);
+            player.animator.SetFloat(AnimHash.Velocity, MoveDirection.magnitude);
         }
         else
         {
-            player.animator.SetFloat("Velocity", moveDirection.magnitude);
+            player.animator.SetFloat(AnimHash.Velocity, MoveDirection.magnitude);
         }
     }
 
@@ -123,17 +134,22 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
 
     public void CheckDirection()
     {
-        bool isDiagonal = (moveDirection.x != 0 && moveDirection.z != 0);
-        bool isSingleDirection = (moveDirection.x != 0 || moveDirection.z != 0) && !isDiagonal;
+        bool isDiagonal = (MoveDirection.x != 0 && MoveDirection.z != 0);
+        bool isSingleDirection = (MoveDirection.x != 0 || MoveDirection.z != 0) && !isDiagonal;
 
         if (isDiagonal)
         {
-            lastDirection = moveDirection;
+            lastDirection = MoveDirection;
         }
         else if (isSingleDirection && !wasDiagonal)
         {
-            lastDirection = moveDirection;
+            lastDirection = MoveDirection;
         }
         wasDiagonal = isDiagonal;
+    }
+
+    public void SetJoystick(VariableJoystick joystick)
+    {
+        this.joystick = joystick;
     }
 }

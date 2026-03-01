@@ -8,8 +8,8 @@ public class EnemyInactiveState : EnemyBaseState
     {
         if (enemy.playerState.IsDead)
         {
-            enemy.animator.SetBool("isRunning", false);
-            enemy.animator.SetBool("isReady", false);
+            enemy.animator.SetBool(AnimHash.IsRunning, false);
+            enemy.animator.SetBool(AnimHash.IsReady, false);
             enemy.agent.isStopped = true;
             enemy.transform.LookAt(enemy.playerPos);
         }

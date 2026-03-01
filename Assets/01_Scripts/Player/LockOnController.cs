@@ -28,7 +28,7 @@ public class LockOnController : MonoBehaviour, IBattleComponent
             if (player.targetDistance <= player.CharacterData.stats.attackRange)
             {
                 player.SetIsLockedOn(true);
-                player.animator.SetBool("isLockedOn", true);
+                player.animator.SetBool(AnimHash.IsLockedOn, true);
             }
             else
             {
@@ -43,7 +43,7 @@ public class LockOnController : MonoBehaviour, IBattleComponent
 
                     if (releaseLockOn)
                     {
-                        player.animator.SetBool("isLockedOn", false);
+                        player.animator.SetBool(AnimHash.IsLockedOn, false);
                         player.SetIsLockedOn(false);
                     }
                 }
@@ -61,7 +61,7 @@ public class LockOnController : MonoBehaviour, IBattleComponent
             if (releaseLockOn)
             {
                 player.SetIsLockedOn(false);
-                player.animator.SetBool("isLockedOn", false);
+                player.animator.SetBool(AnimHash.IsLockedOn, false);
             }
         }
     }

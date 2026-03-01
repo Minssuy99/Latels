@@ -9,7 +9,7 @@ public class PlayerDeadState : PlayerBaseState
         player.animator.SetLayerWeight(1, 0f);
         player.animator.SetLayerWeight(2, 0f);
 
-        player.animator.SetTrigger("Die");
+        player.animator.SetTrigger(AnimHash.Die);
 
         player.SetIsAttacking(false);
         player.attack.enabled = false;
