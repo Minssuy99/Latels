@@ -1,11 +1,11 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class TargetDetector : MonoBehaviour, IBattleComponent
 {
+    [SerializeField] private float detectRange;
     public float LastDistance { get; private set; } = Mathf.Infinity;
 
-    public List<EnemyStateManager> Enemies { get; private set; } = new ();
+    private Collider[] hitBuffer = new Collider[20];
 
     public EnemyStateManager FindNearestTarget(GameObject exclude = null)
     {
@@ -13,10 +13,14 @@ public class TargetDetector : MonoBehaviour, IBattleComponent
         float nearest = Mathf.Infinity;
         float distance;
 
-        foreach (var enemy in Enemies)
+        int count = Physics.OverlapSphereNonAlloc(transform.position, detectRange, hitBuffer);
+
+        for (int i = 0; i < count; i++)
         {
-            if (enemy == null) continue;
-            if (enemy.gameObject == exclude)  continue;
+            EnemyStateManager enemy = hitBuffer[i].GetComponent<EnemyStateManager>();
+            if (!enemy) continue;
+            if (enemy.gameObject == exclude) continue;
+            if (enemy.currentState is EnemyInactiveState) continue;
             if (enemy.currentState is EnemyDeadState) continue;
 
             distance = Vector3.Distance(transform.position, enemy.transform.position);
@@ -28,10 +32,5 @@ public class TargetDetector : MonoBehaviour, IBattleComponent
         }
         LastDistance = nearestTarget? nearest : Mathf.Infinity;
         return nearestTarget;
-    }
-
-    public void SetEnemies(List<EnemyStateManager> enemies)
-    {
-        Enemies = enemies;
     }
 }

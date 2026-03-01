@@ -4,44 +4,70 @@ using System.Collections.Generic;
 
 public class Area : MonoBehaviour
 {
-    [SerializeField] private GameObject door;
+    public Action onCleared;
+
+    private GameObject gate;
     private EnemyStateManager boss;
-    public SpawnPoint[] spawnPoints;
-
-    public Action OnCleared;
-
-    private List<EnemyStateManager> enemies = new();
+    private SpawnPoint[] spawnPoints;
+    private readonly List<EnemyStateManager> enemies = new();
     private bool isEnter;
 
-    private void Start()
+    private void Awake()
     {
-        door.SetActive(true);
+        spawnPoints = GetComponentsInChildren<SpawnPoint>();
+        gate = transform.Find("Gate")?.gameObject;
+        if (gate != null)
+        {
+            gate.SetActive(true);
+        }
     }
 
-    private void OnTriggerEnter(Collider other)
+    public void SpawnEnemies(Transform parent)
     {
-        if (isEnter) return;
-
-        if (other.CompareTag("Player"))
+        foreach (SpawnPoint point in spawnPoints)
         {
-            isEnter = true;
+            GameObject enemyObj = Instantiate(point.Data.prefab, point.transform.position, point.transform.rotation);
+            enemyObj.transform.SetParent(parent, true);
+            EnemyStateManager enemy = enemyObj.GetComponent<EnemyStateManager>();
 
-            TargetDetector targetDetector = other.GetComponent<TargetDetector>();
-            targetDetector.SetEnemies(enemies);
+            enemy.SetData(point.Data);
+            enemy.SetArea(this);
+            enemy.gameObject.name = point.Data.EnemyName;
+            enemies.Add(enemy);
+            InGameUIManager.Instance.SubscribeEnemy(enemy.health);
 
-            if(boss != null)
-                InGameUIManager.Instance.ShowBossHP(boss.health);
-
-            foreach(EnemyStateManager enemy in enemies)
+            if (point.IsBoss)
             {
-                enemy.Activate(this);
+                enemy.gameObject.name = $"보스: {point.Data.EnemyName}";
+                boss = enemy;
+            }
+
+            if (!point.VisibleOnSpawn)
+            {
+                enemy.gameObject.SetActive(false);
             }
         }
     }
 
-    public void AddEnemy(EnemyStateManager enemy)
+    public void OnPlayerEnter(Collider other)
     {
-        enemies.Add(enemy);
+        if (isEnter) return;
+
+        if (other.CompareTag(GameTags.Player))
+        {
+            isEnter = true;
+
+            if (boss != null)
+            {
+                InGameUIManager.Instance.ShowBossHp(boss.health);
+            }
+
+            foreach(EnemyStateManager enemy in enemies)
+            {
+                enemy.gameObject.SetActive(true);
+                enemy.Activate();
+            }
+        }
     }
 
     public void RemoveEnemy(EnemyStateManager enemy)
@@ -50,16 +76,13 @@ public class Area : MonoBehaviour
 
         if (enemies.Count == 0)
         {
-            door.SetActive(false);
-            OnCleared?.Invoke();
+            gate.SetActive(false);
+            onCleared?.Invoke();
 
-            if (boss != null)
-                InGameUIManager.Instance.HideBossHP();
+            if (boss)
+            {
+                InGameUIManager.Instance.HideBossHp();
+            }
         }
-    }
-
-    public void SetBoss(EnemyStateManager boss)
-    {
-        this.boss = boss;
     }
 }

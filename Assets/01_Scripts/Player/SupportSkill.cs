@@ -52,7 +52,7 @@ public class SupportSkill : MonoBehaviour, ISkillComponent
 
         if (player.IsDead) return;
         if (!slot.canUse) return;
-        if (player.targetDetector.Enemies.Count == 0) return;
+        if (player.targetDetector.FindNearestTarget() == null) return;
 
         slot.canUse = false;
         slot.remainTime = slot.coolTime;
@@ -60,7 +60,7 @@ public class SupportSkill : MonoBehaviour, ISkillComponent
         if(slot.characterObj == null) return;
         slot.characterObj.transform.position = player.transform.position;
         slot.characterObj.SetActive(true);
-        slot.support.Initialize(player.targetDetector.Enemies);
+        slot.support.Initialize();
         slot.support.OnSkillStart();
     }
 
@@ -78,14 +78,14 @@ public class SupportSkill : MonoBehaviour, ISkillComponent
         yield return null;
         foreach (SupportSlot slot in slots)
         {
-            if (slot.characterObj == null) continue;
+            if (!slot.characterObj) continue;
             slot.characterObj.SetActive(true);
         }
 
         yield return null;
         foreach (SupportSlot slot in slots)
         {
-            if (slot.characterObj == null) continue;
+            if (!slot.characterObj) continue;
             slot.characterObj.SetActive(false);
         }
     }

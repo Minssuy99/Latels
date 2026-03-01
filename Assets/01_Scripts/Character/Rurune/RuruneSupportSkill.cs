@@ -8,7 +8,7 @@ using UnityEngine;
       private TargetDetector targetDetector;
       private RuruneAttack ruruneAttack;
 
-      public void Initialize(List<EnemyStateManager> enemies)
+      public void Initialize()
       {
           if (animator == null)
           {
@@ -16,7 +16,6 @@ using UnityEngine;
               targetDetector = GetComponent<TargetDetector>();
               ruruneAttack = GetComponent<RuruneAttack>();
           }
-          targetDetector.SetEnemies(enemies);
       }
 
       public void OnSkillStart()
@@ -39,7 +38,7 @@ using UnityEngine;
               transform.LookAt(target1.transform);
 
           yield return new WaitForSecondsRealtime(0.1f);
-          animator.SetTrigger("Kick1");
+          // animator.SetTrigger("Kick1");
           yield return new WaitForSecondsRealtime(0.8f);
 
           GameObject target2 = targetDetector.FindNearestTarget(target1)?.gameObject;
@@ -52,13 +51,14 @@ using UnityEngine;
               transform.LookAt(target2.transform);
 
           yield return new WaitForSecondsRealtime(0.1f);
-          animator.SetTrigger("Kick2");
+          // animator.SetTrigger("Kick2");
           yield return new WaitForSecondsRealtime(1.675f);
           animator.updateMode = AnimatorUpdateMode.Normal;
       }
 
       public void OnRuruneSkill()
       {
+          if (!enabled) return;
           if (ruruneAttack == null)
               ruruneAttack = GetComponent<RuruneAttack>();
           ruruneAttack.Shoot();

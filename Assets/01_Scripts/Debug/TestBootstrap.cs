@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class TestBootstrap : MonoBehaviour
 {
@@ -19,7 +18,7 @@ public class TestBootstrap : MonoBehaviour
     public EnemyData runtimeEnemyData;
 
     private GameObject playerObj;
-    private List<EnemyStateManager> enemies = new();
+
     private void Start()
     {
         playerObj = Instantiate(playerData.battlePrefab);
@@ -45,11 +44,7 @@ public class TestBootstrap : MonoBehaviour
             EnemyStateManager enemy = enemyObj.GetComponent<EnemyStateManager>();
             enemy.name = "Enemy";
             enemy.SetData(enemyDataCopy);
-            enemy.SetPlayer(playerObj);
-            enemy.Activate(null);
-            enemies.Add(enemy);
+            enemy.Activate();
         }
-
-        playerObj.GetComponent<TargetDetector>().SetEnemies(enemies);
     }
 }

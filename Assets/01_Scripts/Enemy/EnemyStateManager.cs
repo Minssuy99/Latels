@@ -37,10 +37,12 @@ public class EnemyStateManager : MonoBehaviour
         readyState = new EnemyReadyState(this);
         deadState = new EnemyDeadState(this);
 
-        animator = GetComponent<Animator>();
+        animator = GetComponentInChildren<Animator>();
         attack = GetComponent<EnemyAttack>();
         health = GetComponent<EnemyHealth>();
         agent =  GetComponent<NavMeshAgent>();
+        player =  GameObject.FindGameObjectWithTag(GameTags.Player);
+        playerState = player.GetComponent<PlayerStateManager>();
     }
 
     private void Start()
@@ -80,16 +82,14 @@ public class EnemyStateManager : MonoBehaviour
         agent.stoppingDistance = Data.stats.attackRange;
     }
 
-    public void SetPlayer(GameObject player)
+    public void SetArea(Area area)
     {
-        this.player = player;
-        playerState = player.GetComponent<PlayerStateManager>();
+        this.area = area;
     }
 
-    public void Activate(Area area)
+    public void Activate()
     {
         ChangeState(readyState);
-        this.area = area;
     }
     public void Ready()
     {

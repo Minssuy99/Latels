@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Unity.AI.Navigation;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
 
 public class StageManager : Singleton<StageManager>
 {
@@ -15,7 +15,7 @@ public class StageManager : Singleton<StageManager>
     private GameObject playerObj;
 
     private GameObject map;
-    private ClearPlace clearPlace;
+    private ResultPoint resultPoint;
     private Transform playerSpawn;
     private Area[] areas;
 
@@ -23,9 +23,16 @@ public class StageManager : Singleton<StageManager>
     private int clearAreaCount;
     private int totalAreaCount;
 
+    private Camera cam;
+
     protected override void Awake()
     {
         base.Awake();
+        cam = Camera.main;
+    }
+
+    private void Start()
+    {
         LoadStage();
     }
 
@@ -52,9 +59,9 @@ public class StageManager : Singleton<StageManager>
     {
         map = Instantiate(stageData.mapPrefab);
         map.GetComponent<NavMeshSurface>().BuildNavMesh();
-        clearPlace = map.GetComponentInChildren<ClearPlace>();
-        clearDirector.SetCameraPoint(clearPlace.cameraPoint, clearPlace.CameraEndPoint);
-        Camera.main.fieldOfView = 60f;
+        resultPoint = map.GetComponentInChildren<ResultPoint>();
+        clearDirector.SetCameraPoint(resultPoint.cameraPoint, resultPoint.CameraEndPoint);
+        cam.fieldOfView = 60f;
         playerSpawn = map.transform.Find("PlayerSpawn");
     }
 
@@ -67,11 +74,11 @@ public class StageManager : Singleton<StageManager>
         playerObj.GetComponent<CharacterSetup>().SetRole(CharacterRole.Main, slots[0]);
         InGameUIManager.Instance.SetPlayer(playerObj.GetComponent<PlayerStateManager>());
         TimeManager.Instance.SetAnimator(playerObj.GetComponent<Animator>());
-        Camera.main.GetComponent<FollowCamera>().SetPlayer(playerObj.transform);
+        cam.GetComponent<FollowCamera>().SetPlayer(playerObj.transform);
         playerInput = playerObj.GetComponent<PlayerInput>();
         playerObj.transform.SetParent(battleRoot, true);
         playerObj.name = $"메인: {slots[0].charName}";
-        playerObj.tag = "Player";
+        playerObj.tag = GameTags.Player;
 
         for (int i = 1; i < slots.Length; i++)
         {
@@ -94,7 +101,7 @@ public class StageManager : Singleton<StageManager>
         {
             if (slots[i] == null) continue;
 
-            GameObject obj = Instantiate(slots[i].displayPrefab, clearPlace.characterPosition[i]);
+            GameObject obj = Instantiate(slots[i].displayPrefab, resultPoint.characterPosition[i]);
             displayCharacters.Add(obj.GetComponent<Animator>());
         }
         clearDirector.SetDisplayAnimators(displayCharacters);
@@ -107,22 +114,7 @@ public class StageManager : Singleton<StageManager>
 
         foreach (Area area in areas)
         {
-            foreach (SpawnPoint point in area.spawnPoints)
-            {
-                GameObject enemyObj = Instantiate(point.Data.prefab, point.transform.position, point.transform.rotation);
-                enemyObj.transform.SetParent(enemyRoot, true);
-                EnemyStateManager enemy = enemyObj.GetComponent<EnemyStateManager>();
-                enemy.SetData(point.Data);
-                enemy.gameObject.name = point.Data.EnemyName;
-                area.AddEnemy(enemy);
-                if (point.IsBoss)
-                {
-                    enemy.gameObject.name = $"보스: {point.Data.EnemyName}";
-                    area.SetBoss(enemy);
-                }
-
-                enemy.SetPlayer(playerObj);
-            }
+            area.SpawnEnemies(enemyRoot);
         }
     }
 
@@ -132,7 +124,7 @@ public class StageManager : Singleton<StageManager>
 
         for (int i = 0; i < areas.Length; i++)
         {
-            areas[i].OnCleared += OnAreaCleared;
+            areas[i].onCleared += OnAreaCleared;
         }
     }
 }
