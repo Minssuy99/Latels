@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class PlayerDeadState : PlayerBaseState
 {
     public PlayerDeadState(PlayerStateManager player) : base(player)
@@ -6,8 +8,8 @@ public class PlayerDeadState : PlayerBaseState
 
     public override void Enter()
     {
-        player.animator.SetLayerWeight(1, 0f);
-        player.animator.SetLayerWeight(2, 0f);
+        player.animator.SetLayerWeight(AnimHash.FullBodyLayer, 0f);
+        player.animator.SetLayerWeight(AnimHash.UpperBodyLayer, 0f);
 
         player.animator.SetTrigger(AnimHash.Die);
 

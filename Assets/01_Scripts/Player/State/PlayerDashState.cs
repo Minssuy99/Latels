@@ -12,8 +12,8 @@ public class PlayerDashState : PlayerBaseState
         player.SetIsAttacking(false);
         player.animator.applyRootMotion = false;
 
-        player.animator.SetLayerWeight(1, 0f);
-        player.animator.SetLayerWeight(2, 0f);
+        player.animator.SetLayerWeight(AnimHash.FullBodyLayer, 0f);
+        player.animator.SetLayerWeight(AnimHash.UpperBodyLayer, 0f);
         player.animator.SetTrigger(AnimHash.Dash);
         player.StartCoroutine(player.dash.DashCoroutine());
     }

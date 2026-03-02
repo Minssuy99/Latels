@@ -25,11 +25,11 @@ public class PlayerSprintState : PlayerBaseState
         player.move.HandleRotation();
         player.move.ApplyRotation();
         player.move.UpdateAnimParameter();
-        player.animator.SetLayerWeight(3, Mathf.Lerp(player.animator.GetLayerWeight(3), 1f, 10f * TimeManager.Instance.PlayerDelta));
+        player.animator.SetLayerWeight(AnimHash.SprintLayer, Mathf.Lerp(player.animator.GetLayerWeight(AnimHash.SprintLayer), 1f, 10f * TimeManager.Instance.PlayerDelta));
     }
 
     public override void Exit()
     {
-        player.animator.SetLayerWeight(3, 0f);
+        player.animator.SetLayerWeight(AnimHash.SprintLayer, 0f);
     }
 }

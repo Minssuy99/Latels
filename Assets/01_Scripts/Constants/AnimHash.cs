@@ -15,8 +15,6 @@ public static class AnimHash
     public static readonly int Hit = Animator.StringToHash("Hit");
     public static readonly int Select = Animator.StringToHash("Select");
     public static readonly int Clear = Animator.StringToHash("Clear");
-    public static readonly int Kick1 = Animator.StringToHash("Kick1");
-    public static readonly int Kick2 = Animator.StringToHash("Kick2");
 
     // Float
     public static readonly int VelocityX = Animator.StringToHash("VelocityX");
@@ -31,4 +29,9 @@ public static class AnimHash
     public static readonly int LockOn = Animator.StringToHash("LockOn");
     public static readonly int Run = Animator.StringToHash("Run");
     public static readonly int Idle = Animator.StringToHash("Idle");
+
+    // Layer Index
+    public const int FullBodyLayer = 1;
+    public const int UpperBodyLayer = 2;
+    public const int SprintLayer = 3;
 }

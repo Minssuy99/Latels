@@ -8,8 +8,8 @@ public class PlayerSkillState : PlayerBaseState
     {
         player.SetCanAttack(true);
         player.SetIsAttacking(false);
-        player.animator.SetLayerWeight(1, 0f);
-        player.animator.SetLayerWeight(2, 0f);
+        player.animator.SetLayerWeight(AnimHash.FullBodyLayer, 0f);
+        player.animator.SetLayerWeight(AnimHash.UpperBodyLayer, 0f);
         player.animator.ResetTrigger(AnimHash.Attack);
         player.mainSkill.OnSkillStart();
     }
