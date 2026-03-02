@@ -59,7 +59,7 @@ public class ClearDirector : MonoBehaviour
     {
         StageManager.Instance.OnStageClear += () => StartCoroutine(ClearSequence());
 
-        float doorHeight = clockLeft.transform.parent.GetComponent<RectTransform>().rect.height;
+        float doorHeight = doorLeft.rect.height;
         clockLeft.sizeDelta = new Vector2(doorHeight, 0f);
         clockRight.sizeDelta = new Vector2(doorHeight, 0f);
         clockLeft.anchoredPosition = Vector2.zero;
@@ -106,11 +106,14 @@ public class ClearDirector : MonoBehaviour
 
     private IEnumerator HitStopPhase()
     {
-        TimeManager.Instance.StartHitStop();
-        yield return new WaitForSecondsRealtime(1f);
-
-        TimeManager.Instance.StopHitStop();
-        yield return new WaitForSecondsRealtime(1f);
+        TimeManager.Instance.StopBulletTime();
+        StageManager.Instance.PlayerInput.enabled = false;
+        StageManager.Instance.PlayerInput.GetComponent<PlayerStateManager>().SetIsLockedOn(false);
+        TimeManager.Instance.StartSlowAll(3f, 0f, 2f);
+        cam.GetComponent<FollowCamera>().ZoomIn(0.7f, 2f, Ease.OutCubic);
+        yield return new WaitForSecondsRealtime(3f);
+        cam.GetComponent<FollowCamera>().ZoomOut(1f);
+        yield return new WaitForSecondsRealtime(2f);
     }
 
     private IEnumerator FadePhase()
@@ -166,7 +169,7 @@ public class ClearDirector : MonoBehaviour
 
     private IEnumerator ResultUIPhase()
     {
-        string stageName = GameManager.Instance.stageData.stageName;
+        string stageName = GameManager.Instance.StageData.stageName;
         float currentExp = 4635;
         float maxExp = 6000;
 

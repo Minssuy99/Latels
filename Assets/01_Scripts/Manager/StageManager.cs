@@ -9,6 +9,7 @@ public class StageManager : Singleton<StageManager>
     [SerializeField] private ClearDirector clearDirector;
 
     public event Action OnStageClear;
+    public bool IsClear { get; private set; }
 
     public PlayerInput PlayerInput => playerInput;
     private PlayerInput playerInput;
@@ -41,13 +42,14 @@ public class StageManager : Singleton<StageManager>
         clearAreaCount++;
         if (clearAreaCount >= totalAreaCount)
         {
+            IsClear = true;
             OnStageClear?.Invoke();
         }
     }
 
     private void LoadStage()
     {
-        stageData = GameManager.Instance.stageData;
+        stageData = GameManager.Instance.StageData;
         SpawnMap();
         SpawnBattleCharacters();
         SpawnDisplayCharacters();
@@ -67,7 +69,7 @@ public class StageManager : Singleton<StageManager>
 
     private void SpawnBattleCharacters()
     {
-        CharacterData[] slots = GameManager.Instance.characterSlots;
+        CharacterData[] slots = GameManager.Instance.CharacterSlots;
         Transform battleRoot = new GameObject("캐릭터").transform;
 
         playerObj = Instantiate(slots[0].battlePrefab, playerSpawn.position, playerSpawn.rotation);
@@ -94,7 +96,7 @@ public class StageManager : Singleton<StageManager>
 
     private void SpawnDisplayCharacters()
     {
-        CharacterData[] slots = GameManager.Instance.characterSlots;
+        CharacterData[] slots = GameManager.Instance.CharacterSlots;
         List<Animator> displayCharacters = new List<Animator>();
 
         for (int i = 0; i < slots.Length; i++)
@@ -124,7 +126,7 @@ public class StageManager : Singleton<StageManager>
 
         for (int i = 0; i < areas.Length; i++)
         {
-            areas[i].onCleared += OnAreaCleared;
+            areas[i].OnCleared += OnAreaCleared;
         }
     }
 }
