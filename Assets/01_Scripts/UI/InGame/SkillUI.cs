@@ -30,7 +30,7 @@ public class SkillUI : MonoBehaviour
     private void Update()
     {
         if (!player) return;
-        UpdateCooldownUI(mainSkillSlot, player.mainSkill.remainTime);
+        UpdateCooldownUI(mainSkillSlot, player.mainSkill.RemainTime);
         UpdateCooldownUI(support1SkillSlot, player.supportSkill.GetRemainTime(0));
         UpdateCooldownUI(support2SkillSlot, player.supportSkill.GetRemainTime(1));
     }
@@ -66,15 +66,15 @@ public class SkillUI : MonoBehaviour
         this.player = player;
         if (GameManager.Instance == null) return;
 
-        CharacterData mainData = GameManager.Instance.characterSlots[0];
+        CharacterData mainData = GameManager.Instance.CharacterSlots[0];
         if (mainData != null)
             mainSkillSlot.icon.sprite = mainData.sprites.skillIcon;
 
-        CharacterData sub1Data = GameManager.Instance.characterSlots[1];
+        CharacterData sub1Data = GameManager.Instance.CharacterSlots[1];
         if (sub1Data != null)
             support1SkillSlot.icon.sprite = sub1Data.sprites.skillIcon;
 
-        CharacterData sub2Data = GameManager.Instance.characterSlots[2];
+        CharacterData sub2Data = GameManager.Instance.CharacterSlots[2];
         if (sub2Data != null)
             support2SkillSlot.icon.sprite = sub2Data.sprites.skillIcon;
     }

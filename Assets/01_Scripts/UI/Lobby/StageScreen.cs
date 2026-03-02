@@ -69,7 +69,7 @@ public class StageScreen : UIScreen
 
     private void PlaceStagePrefab()
     {
-        ChapterData data = GameManager.Instance.chapterData;
+        ChapterData data = GameManager.Instance.ChapterData;
 
         for (int i = 0; i < data.stages.Length; i++)
         {
@@ -81,7 +81,7 @@ public class StageScreen : UIScreen
             int index = i;
             stage.GetComponent<Button>().onClick.AddListener(() =>
             {
-                GameManager.Instance.SelectStage(GameManager.Instance.chapterData.stages[index]);
+                GameManager.Instance.SelectStage(GameManager.Instance.ChapterData.stages[index]);
                 UIManager.Instance.Open(stageInfoPopup);
             });
 
