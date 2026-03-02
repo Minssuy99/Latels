@@ -2,19 +2,20 @@ using UnityEngine;
 
 public class InGameUIManager : Singleton<InGameUIManager>
 {
-    [SerializeField] private VariableJoystick joystick;
-    [SerializeField] private PlayerHPUI playerHpUI;
+    [SerializeField] private Joystick joystick;
+    [SerializeField] private PlayerHpBar playerHpBar;
     [SerializeField] private DashUI dashUI;
     [SerializeField] private SkillUI skillUI;
     [SerializeField] private BossHPUI bossHpUI;
     [SerializeField] private VignetteUI vignetteUI;
     [SerializeField] private LockOnIndicatorUI lockOnIndicatorUI;
-    [SerializeField] private DamagePopupUI damagePopupUI;
+    [SerializeField] private DamageHolder damageHolder;
+    [SerializeField] private EnemyHpHolder enemyHpHolder;
 
     public void SetPlayer(PlayerStateManager player)
     {
         player.move.SetJoystick(joystick);
-        playerHpUI.SetPlayer(player);
+        playerHpBar.SetPlayer(player);
         dashUI.SetPlayer(player);
         skillUI.SetPlayer(player);
         lockOnIndicatorUI.SetPlayer(player);
@@ -23,16 +24,22 @@ public class InGameUIManager : Singleton<InGameUIManager>
         playerHealth.OnDamaged += (damage, attackerPos) =>
         {
             vignetteUI.ShowVignetteEffect();
-            damagePopupUI.SpawnDamagePopup(damage, player.transform, attackerPos, DamageType.Player);
+            damageHolder.SpawnDamagePopup(damage, player.transform, attackerPos, DamageType.Player);
         };
     }
 
     public void SubscribeEnemy(EnemyHealth enemyHealth)
     {
+        enemyHpHolder.CreateHpBar(enemyHealth);
         enemyHealth.OnDamaged += (damage, attackerPos) =>
         {
-            damagePopupUI.SpawnDamagePopup(damage, enemyHealth.transform, attackerPos, DamageType.Enemy);
+            damageHolder.SpawnDamagePopup(damage, enemyHealth.transform, attackerPos, DamageType.Enemy);
         };
+    }
+
+    public void CreateEnemyHpBar(EnemyHealth enemy)
+    {
+        enemyHpHolder.CreateHpBar(enemy);
     }
 
     public void ShowBossHp(EnemyHealth boss)
