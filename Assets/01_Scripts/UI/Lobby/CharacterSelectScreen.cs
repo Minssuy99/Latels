@@ -7,10 +7,7 @@ using UnityEngine.UI;
 
 public class CharacterSelectScreen : UIScreen
 {
-    [Header("※ Camera")]
-    [SerializeField] private Transform camDefaultPos;
-    [SerializeField] private Transform camPanelPos;
-
+    [SerializeField] private LobbyCameraController lobbyCam;
     [Space(10)]
     [Header("※ Character Slot")]
     [SerializeField] private RectTransform characterPanel;
@@ -41,19 +38,16 @@ public class CharacterSelectScreen : UIScreen
     [Header("※ Reference")]
     [SerializeField] private UIScreen stageScreen;
 
-    private Camera cam;
     private ScrollRect characterListScroll;
     private CharacterData[] ownedCharacters;
     private GameObject[] displayModels = new GameObject[3];
     private List<CharacterListItem> listItems = new();
     private Tweener pickRotation;
-    private float defaultFOV;
     private bool isPanelOpen;
     private int selectedSlotIndex = -1;
 
     private void Awake()
     {
-        cam = Camera.main;
         characterListScroll = GetComponentInChildren<ScrollRect>();
         ownedCharacters = Resources.LoadAll<CharacterData>("Characters");
         alertCanvasGroup.alpha = 0;
@@ -65,14 +59,12 @@ public class CharacterSelectScreen : UIScreen
         isPanelOpen = false;
         pickIndicator.gameObject.SetActive(false);
 
-        cam.transform.position = camDefaultPos.position;
+        lobbyCam.SetDefaultView();
+
         characterPanel.DOAnchorPosX(0, 0.25f);
         characterPanel.DOScale(new Vector3(1f, 1f), 0.25f);
 
         float aspect = (float)Screen.width / Screen.height;
-        cam.fieldOfView = Mathf.Lerp(35, 27, Mathf.InverseLerp(1.33f, 2.17f, aspect));
-        defaultFOV = cam.fieldOfView;
-
         float listWidth = Mathf.Lerp(730, 900, Mathf.InverseLerp(1.33f, 2.17f, aspect));
         characterList.sizeDelta = new Vector2(listWidth, characterList.sizeDelta.y);
 
@@ -107,14 +99,14 @@ public class CharacterSelectScreen : UIScreen
 
     public void StartGame()
     {
-        if (GameManager.Instance.characterSlots[0] == null)
+        if (GameManager.Instance.CharacterSlots[0] == null)
         {
             ShowAlert();
             return;
         }
 
         GameManager.Instance.SetReturnToStage(true);
-        GameManager.Instance.LoadGameScene(GameManager.Instance.stageData);
+        GameManager.Instance.LoadGameScene(GameManager.Instance.StageData);
     }
 
     public void ShowCharacterSelectPanel(int index)
@@ -126,9 +118,7 @@ public class CharacterSelectScreen : UIScreen
         isPanelOpen = true;
         PopulateList();
 
-        cam.transform.DOMove(camPanelPos.position, 0.25f);
-        cam.transform.DORotate(camPanelPos.rotation.eulerAngles, 0.25f);
-        cam.DOFieldOfView(defaultFOV + 3f, 0.25f);
+        lobbyCam.MoveToPanelView();
 
         characterPanel.DOAnchorPosX(-360, 0.25f);
         characterPanel.DOScale(new Vector3(0.85f, 0.85f), 0.25f);
@@ -145,9 +135,7 @@ public class CharacterSelectScreen : UIScreen
         pickIndicator.gameObject.SetActive(false);
 
         isPanelOpen = false;
-        cam.transform.DOMove(camDefaultPos.position, 0.25f);
-        cam.transform.DORotate(camDefaultPos.rotation.eulerAngles, 0.25f);
-        cam.DOFieldOfView(defaultFOV, 0.25f);
+        lobbyCam.MoveToDefaultView();
 
         characterPanel.DOAnchorPosX(0, 0.25f);
         characterPanel.DOScale(new Vector3(1f, 1f), 0.25f);
@@ -168,7 +156,7 @@ public class CharacterSelectScreen : UIScreen
         }
         listItems.Clear();
 
-        CharacterData[] slots = GameManager.Instance.characterSlots;
+        CharacterData[] slots = GameManager.Instance.CharacterSlots;
 
         for (int i = 0; i < slots.Length; i++)
         {
@@ -195,7 +183,7 @@ public class CharacterSelectScreen : UIScreen
     private void OnListItemClicked(CharacterData data)
     {
         List<int> changedSlots = new();
-        CharacterData[] slots = GameManager.Instance.characterSlots;
+        CharacterData[] slots = GameManager.Instance.CharacterSlots;
         int existingSlot = Array.IndexOf(slots, data);
 
         if (existingSlot == selectedSlotIndex)
@@ -222,7 +210,7 @@ public class CharacterSelectScreen : UIScreen
 
     private void RefreshCharacterModels(List<int> changedSlots = null)
     {
-        CharacterData[] slots = GameManager.Instance.characterSlots;
+        CharacterData[] slots = GameManager.Instance.CharacterSlots;
 
         for (int i = 0; i < slots.Length; i++)
         {
@@ -256,7 +244,7 @@ public class CharacterSelectScreen : UIScreen
 
     private void RefreshSelectedBadges()
     {
-        CharacterData[] slots = GameManager.Instance.characterSlots;
+        CharacterData[] slots = GameManager.Instance.CharacterSlots;
         foreach (var item in listItems)
         {
             int slotIndex = Array.IndexOf(slots, item.Data);
