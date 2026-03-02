@@ -5,7 +5,7 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
 {
     private PlayerStateManager player;
 
-    private VariableJoystick joystick;
+    private Joystick joystick;
     [SerializeField] private float moveSpeed = 4.5f;
     [SerializeField] private float sprintSpeed = 6f;
     [SerializeField] private float rotationSpeed = 15f;
@@ -148,7 +148,7 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
         wasDiagonal = isDiagonal;
     }
 
-    public void SetJoystick(VariableJoystick joystick)
+    public void SetJoystick(Joystick joystick)
     {
         this.joystick = joystick;
     }
