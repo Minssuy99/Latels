@@ -23,7 +23,7 @@ public abstract class PlayerAttack : MonoBehaviour
     {
         if (player.isAttackFinishing)
         {
-            if (player.targetDistance <= player.CharacterData.stats.attackRange)
+            if (player.targetDistance <= player.AttackRange)
             {
                 player.SetIsAttackFinishing(false);
                 player.SetIsAttacking(true);
@@ -40,7 +40,7 @@ public abstract class PlayerAttack : MonoBehaviour
             return;
         }
 
-        if (player.targetDistance <= player.CharacterData.stats.attackRange)
+        if (player.targetDistance <= player.AttackRange)
         {
             player.SetIsAttacking(true);
             ExecuteAttack();
@@ -60,13 +60,13 @@ public abstract class PlayerAttack : MonoBehaviour
 
         if (player.isAttackFinishing)
         {
-            player.animator.SetLayerWeight(1, Mathf.Lerp(player.animator.GetLayerWeight(1), 0.0f, speed));
-            player.animator.SetLayerWeight(2, Mathf.Lerp(player.animator.GetLayerWeight(2), 0.0f, speed));
+            player.animator.SetLayerWeight(AnimHash.FullBodyLayer, Mathf.Lerp(player.animator.GetLayerWeight(AnimHash.FullBodyLayer), 0.0f, speed));
+            player.animator.SetLayerWeight(AnimHash.UpperBodyLayer, Mathf.Lerp(player.animator.GetLayerWeight(AnimHash.UpperBodyLayer), 0.0f, speed));
 
-            if (player.animator.GetLayerWeight(1) < 0.01f && player.animator.GetLayerWeight(2) < 0.01f)
+            if (player.animator.GetLayerWeight(AnimHash.FullBodyLayer) < 0.01f && player.animator.GetLayerWeight(AnimHash.UpperBodyLayer) < 0.01f)
             {
-                player.animator.SetLayerWeight(1, 0f);
-                player.animator.SetLayerWeight(2, 0f);
+                player.animator.SetLayerWeight(AnimHash.FullBodyLayer, 0f);
+                player.animator.SetLayerWeight(AnimHash.UpperBodyLayer, 0f);
                 player.SetIsAttackFinishing(false);
                 player.SetIsAttacking(false);
             }
@@ -79,21 +79,21 @@ public abstract class PlayerAttack : MonoBehaviour
 
             if (isMoving)
             {
-                player.animator.SetLayerWeight(1, Mathf.Lerp(player.animator.GetLayerWeight(1), 0.0f, speed));
-                player.animator.SetLayerWeight(2, Mathf.Lerp(player.animator.GetLayerWeight(2), 1.0f, speed));
+                player.animator.SetLayerWeight(AnimHash.FullBodyLayer, Mathf.Lerp(player.animator.GetLayerWeight(AnimHash.FullBodyLayer), 0.0f, speed));
+                player.animator.SetLayerWeight(AnimHash.UpperBodyLayer, Mathf.Lerp(player.animator.GetLayerWeight(AnimHash.UpperBodyLayer), 1.0f, speed));
             }
             else
             {
-                player.animator.SetLayerWeight(1, Mathf.Lerp(player.animator.GetLayerWeight(1), 1.0f, speed));
-                player.animator.SetLayerWeight(2, Mathf.Lerp(player.animator.GetLayerWeight(2), 0.0f, speed));
+                player.animator.SetLayerWeight(AnimHash.FullBodyLayer, Mathf.Lerp(player.animator.GetLayerWeight(AnimHash.FullBodyLayer), 1.0f, speed));
+                player.animator.SetLayerWeight(AnimHash.UpperBodyLayer, Mathf.Lerp(player.animator.GetLayerWeight(AnimHash.UpperBodyLayer), 0.0f, speed));
             }
         }
         else
         {
             if (!player.isAttackFinishing)
             {
-                player.animator.SetLayerWeight(1, Mathf.Lerp(player.animator.GetLayerWeight(1), 0.0f, speed));
-                player.animator.SetLayerWeight(2, Mathf.Lerp(player.animator.GetLayerWeight(2), 0.0f, speed));
+                player.animator.SetLayerWeight(AnimHash.FullBodyLayer, Mathf.Lerp(player.animator.GetLayerWeight(AnimHash.FullBodyLayer), 0.0f, speed));
+                player.animator.SetLayerWeight(AnimHash.UpperBodyLayer, Mathf.Lerp(player.animator.GetLayerWeight(AnimHash.UpperBodyLayer), 0.0f, speed));
             }
         }
     }
@@ -114,7 +114,7 @@ public abstract class PlayerAttack : MonoBehaviour
         if (player.CharacterData == null) return;
 
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, player.CharacterData.stats.attackRange);
+        Gizmos.DrawWireSphere(transform.position, player.AttackRange);
 
         if (player == null || player.targetEnemy == null)
             return;

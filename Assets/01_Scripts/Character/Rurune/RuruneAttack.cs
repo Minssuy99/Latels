@@ -36,17 +36,18 @@ public class RuruneAttack : PlayerAttack, IBattleComponent
 
         if (player.targetDistance < meleeHitRange)
         {
-            player.targetEnemy.GetComponent<IDamageable>().TakeDamage(player.CharacterData.stats.damage, transform.position);
+            player.targetEnemy.GetComponent<IDamageable>().TakeDamage(player.Damage, transform.position);
         }
 
         count++;
         player.animator.SetInteger(AnimHash.AttackCount, count);
 
-        muzzleEffects[muzzleIndex].Play();
+        GameObject obj = muzzleEffects[muzzleIndex].gameObject;
+        TimeManager.Instance.PlayParticle(obj);
 
         GameObject bullet = PoolManager.Instance.Get(bulletPrefab);
         bullet.transform.position = muzzlePositions[muzzleIndex].position;
-        bullet.GetComponent<Bullet>().Init(player.targetEnemy.transform, player.CharacterData.stats.damage, transform.forward);
+        bullet.GetComponent<Bullet>().Init(player.targetEnemy.transform, player.Damage, transform.forward);
 
         muzzleIndex = (muzzleIndex + 1) % muzzlePositions.Length;
     }

@@ -17,6 +17,13 @@ public class EnemyStateManager : MonoBehaviour
     public EnemyReadyState readyState { get; private set; }
     public EnemyDeadState deadState { get; private set; }
 
+    public float AttackRange => Data.stats.attackRange;
+    public float AttackCooldown => Data.stats.attackCooldown;
+    public int AttackTypeCount => Data.stats.attackTypeCount;
+    public int SuperArmorCount => Data.stats.superArmorCount;
+    public float Damage => Data.stats.damage;
+    public float Health => Data.stats.health;
+
     public GameObject player { get; private set; }
     public Vector3 playerPos => new (player.transform.position.x, transform.position.y, player.transform.position.z);
     public PlayerStateManager playerState { get; private set; }

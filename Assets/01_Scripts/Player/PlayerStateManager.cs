@@ -33,6 +33,10 @@ public class PlayerStateManager : MonoBehaviour, IBattleComponent
     public bool IsUsingSkill => currentState is PlayerSkillState;
     public bool IsSprinting => currentState is PlayerSprintState;
 
+    public float AttackRange => CharacterData.stats.attackRange;
+    public float Damage => CharacterData.stats.damage;
+    public float SkillDamage => CharacterData.stats.skillDamage;
+
     public EnemyStateManager targetEnemy { get; set; }
     public float targetDistance { get; set; }
 

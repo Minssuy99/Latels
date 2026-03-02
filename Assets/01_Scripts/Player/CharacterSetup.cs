@@ -11,6 +11,9 @@ public class CharacterSetup : MonoBehaviour
     public CharacterRole Role { get; private set; }
     public CharacterData Data { get; private set; }
 
+    public float AttackRange => Data.stats.attackRange;
+    public float SkillCoolTime => Data.stats.skillCoolTime;
+
     public void SetRole(CharacterRole role, CharacterData data)
     {
         Role = role;

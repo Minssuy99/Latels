@@ -25,7 +25,7 @@ public class LockOnController : MonoBehaviour, IBattleComponent
     {
         if (player.targetEnemy)
         {
-            if (player.targetDistance <= player.CharacterData.stats.attackRange)
+            if (player.targetDistance <= player.AttackRange)
             {
                 player.SetIsLockedOn(true);
                 player.animator.SetBool(AnimHash.IsLockedOn, true);

@@ -40,13 +40,13 @@ public class ShinanoMainSkill : PlayerMainSkill
         {
             if (enemy == null) break;
 
-            enemy.health.TakeDamage(player.CharacterData.stats.skillDamage, transform.position);
+            enemy.health.TakeDamage(player.SkillDamage, transform.position);
 
             if (enemy.health.HP <= 0) break;
 
             if (i < 5)
             {
-                yield return new WaitForSecondsRealtime(0.2f);
+                yield return TimeManager.Instance.WaitRealTime(0.2f);
             }
         }
 
@@ -59,7 +59,7 @@ public class ShinanoMainSkill : PlayerMainSkill
     IEnumerator InvincibleAfterSkill()
     {
         player.SetIsInvincible(true);
-        yield return new WaitForSecondsRealtime(1f);
+        yield return TimeManager.Instance.WaitRealTime(1f);
         player.SetIsInvincible(false);
     }
 }
