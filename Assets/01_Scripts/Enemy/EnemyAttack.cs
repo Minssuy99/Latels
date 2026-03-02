@@ -3,9 +3,10 @@ using UnityEngine;
 public abstract class EnemyAttack : MonoBehaviour
 {
     protected EnemyStateManager enemy;
-    public bool superArmor { get; set; }
-    public int attackType { get; set; }
-    public float attackCooldown { get; set; }
+    public bool SuperArmor { get; private set; }
+    public int AttackType { get; set; }
+    public float AttackCooldown { get; private set; }
+    public bool IsReady => AttackCooldown <= 0;
 
     protected virtual void Awake()
     {
@@ -14,7 +15,23 @@ public abstract class EnemyAttack : MonoBehaviour
 
     protected virtual void Start()
     {
-        attackCooldown = enemy.Data.stats.attackCooldown;
+        AttackCooldown = enemy.Data.stats.attackCooldown;
+    }
+
+    public void ResetAfterAttack()
+    {
+        AttackCooldown = Random.Range(1, enemy.AttackCooldown);
+        SuperArmor = false;
+    }
+
+    public void TickCooldown()
+    {
+        AttackCooldown -= TimeManager.Instance.EnemyDelta;
+    }
+
+    public void ActivateSuperArmor()
+    {
+        SuperArmor = true;
     }
 
     public abstract void DisableAllHitboxes();

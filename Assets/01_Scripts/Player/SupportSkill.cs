@@ -2,17 +2,17 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.InputSystem;
 
-public class SupportSlot
-{
-    public GameObject characterObj;
-    public ISupportSkill support;
-    public float coolTime;
-    public float remainTime;
-    public bool canUse;
-}
-
 public class SupportSkill : MonoBehaviour, ISkillComponent
 {
+    public class SupportSlot
+    {
+        internal GameObject characterObj;
+        internal ISupportSkill support;
+        internal float coolTime;
+        internal float remainTime;
+        internal bool canUse;
+    }
+
     private PlayerStateManager player;
     private SupportSlot[] slots = new SupportSlot[2];
 
@@ -94,7 +94,7 @@ public class SupportSkill : MonoBehaviour, ISkillComponent
     {
         slots[index].characterObj = support;
         slots[index].support = support.GetComponent<ISupportSkill>();
-        slots[index].coolTime = support.GetComponent<CharacterSetup>().Data.stats.skillCoolTime;
+        slots[index].coolTime = support.GetComponent<CharacterSetup>().SkillCoolTime;
     }
 
     public float GetRemainTime(int index)

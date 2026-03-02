@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class Area : MonoBehaviour
 {
-    public Action onCleared;
+    public event Action OnCleared;
 
     private GameObject gate;
     private EnemyStateManager boss;
@@ -77,7 +77,7 @@ public class Area : MonoBehaviour
         if (enemies.Count == 0)
         {
             gate.SetActive(false);
-            onCleared?.Invoke();
+            OnCleared?.Invoke();
 
             if (boss)
             {

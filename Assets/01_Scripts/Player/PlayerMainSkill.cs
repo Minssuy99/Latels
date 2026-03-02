@@ -3,9 +3,8 @@
 
   public abstract class PlayerMainSkill : MonoBehaviour, ISkillComponent
   {
-      public float skillCoolTime => player.CharacterData.stats.skillCoolTime;
-      public float remainTime;
-
+      public float SkillCoolTime => player.CharacterData.stats.skillCoolTime;
+      public float RemainTime { get; private set; }
       private bool canUseSkill = true;
 
       protected PlayerStateManager player;
@@ -22,9 +21,9 @@
       {
           if (canUseSkill == false)
           {
-              remainTime -= TimeManager.Instance.PlayerDelta;
+              RemainTime -= TimeManager.Instance.PlayerDelta;
 
-              if (remainTime <= 0)
+              if (RemainTime <= 0)
                   canUseSkill = true;
           }
       }
@@ -37,7 +36,7 @@
           if (canUseSkill == false) return;
 
           canUseSkill = false;
-          remainTime = skillCoolTime;
+          RemainTime = SkillCoolTime;
           player.ChangeState(player.skillState);
       }
 

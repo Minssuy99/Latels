@@ -5,8 +5,8 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 {
     [SerializeField] private float hitCooldownDuration = 0.075f;
     public float HP { get; private set; }
-    public float MaxHP => enemy.Data.stats.health;
-    public int hitCount { get; set; }
+    public float MaxHP => enemy.Health;
+    public int HitCount { get; set; }
     public event Action<float, Vector3> OnDamaged;
     private float hitCooldown;
     private EnemyStateManager enemy;
@@ -31,6 +31,11 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         {
             hitCooldown -= TimeManager.Instance.PlayerDelta;
         }
+    }
+
+    public void ResetHitCount()
+    {
+        HitCount = 0;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -68,22 +73,22 @@ public class EnemyHealth : MonoBehaviour, IDamageable
             return;
         }
 
-        if (enemy.attack.superArmor)
+        if (enemy.attack.SuperArmor)
         {
             return;
         }
 
         if (enemy.currentState is EnemyAttackState)
         {
-            if (hitCount >= enemy.Data.stats.superArmorCount)
+            if (HitCount >= enemy.SuperArmorCount)
             {
-                hitCount = 0;
-                enemy.attack.superArmor = true;
+                HitCount = 0;
+                enemy.attack.ActivateSuperArmor();
             }
             else
             {
                 InterruptAttack();
-                hitCount++;
+                HitCount++;
             }
             return;
         }

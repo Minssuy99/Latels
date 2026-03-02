@@ -7,10 +7,10 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
     private PlayerStateManager player;
     private DodgeDetector dodgeDetector;
 
+    [SerializeField] private float dashSpeed = 8f;
     [SerializeField] private float dashDuration = 0.4f;
     [SerializeField] private float chargeTime = 2f;
     [SerializeField] private float reuseCooldown = 0.8f;
-    public float dashSpeed = 8f;
 
     private int maxStack = 3;
     private int currentStack = 3;
@@ -76,7 +76,7 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
 
         if (perfectDodge)
         {
-            TimeManager.Instance.BulletTime(player.animator);
+            TimeManager.Instance.PlayBulletTime(player.animator);
         }
 
         currentStack--;
@@ -106,7 +106,7 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
             player.ChangeState(player.idleState);
         }
 
-        yield return new WaitForSecondsRealtime(0.1f);
+        yield return TimeManager.Instance.WaitRealTime(0.1f);
         player.SetCanAttack(true);
     }
 

@@ -29,9 +29,9 @@ public class EnemyChaseState : EnemyBaseState
             enemy.agent.isStopped = true;
             enemy.animator.SetBool(AnimHash.IsRunning, false);
 
-            enemy.attack.attackCooldown -= TimeManager.Instance.EnemyDelta;
+            enemy.attack.TickCooldown();
 
-            if (enemy.attack.attackCooldown <= 0)
+            if (enemy.attack.IsReady)
             {
                 enemy.ChangeState(enemy.attackState);
             }

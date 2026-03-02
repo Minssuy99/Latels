@@ -5,23 +5,19 @@ using DG.Tweening;
 
 public class GameManager : Singleton<GameManager>
 {
-    [Header("Character")]
-    public CharacterData[] characterSlots = new CharacterData[3];
+    public CharacterData[] CharacterSlots { get; private set; } = new CharacterData[3];
+    public ChapterData ChapterData { get; private set; }
+    public StageData StageData { get; private set; }
+    public bool ReturnToStage { get; private set; }
 
-    [Header("Chapter/Stage")]
-    public ChapterData chapterData;
-    public StageData stageData;
-
-    public bool returnToStage;
-
-    public void SelectChapter(ChapterData data) => chapterData = data;
-    public void SelectStage(StageData data) => stageData = data;
-    public void SetReturnToStage(bool value) => returnToStage = value;
-    public void SetCharacterSlot(int index, CharacterData data) => characterSlots[index] = data;
+    public void SetCharacterSlot(int index, CharacterData data) => CharacterSlots[index] = data;
+    public void SelectChapter(ChapterData data) => ChapterData = data;
+    public void SelectStage(StageData data) => StageData = data;
+    public void SetReturnToStage(bool value) => ReturnToStage = value;
 
     public void LoadGameScene(StageData stageData)
     {
-        this.stageData = stageData;
+        StageData = stageData;
         StartCoroutine(LoadSceneCoroutine("GameScene"));
     }
 

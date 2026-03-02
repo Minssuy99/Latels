@@ -9,8 +9,8 @@ public class EnemyAttackState : EnemyBaseState
     public override void Enter()
     {
         enemy.agent.updatePosition = false;
-        enemy.attack.attackType = Random.Range(0, enemy.Data.stats.attackTypeCount);
-        enemy.animator.SetInteger(AnimHash.AttackType, enemy.attack.attackType);
+        enemy.attack.AttackType = Random.Range(0, enemy.AttackTypeCount);
+        enemy.animator.SetInteger(AnimHash.AttackType, enemy.attack.AttackType);
         enemy.animator.SetTrigger(AnimHash.Attack);
     }
 
@@ -19,6 +19,7 @@ public class EnemyAttackState : EnemyBaseState
         if (TimeManager.Instance.IsSlowMotion)
         {
             enemy.rotationLocked = true;
+            enemy.attack.DisableAllHitboxes();
         }
 
         if (!enemy.rotationLocked)
@@ -31,9 +32,8 @@ public class EnemyAttackState : EnemyBaseState
     {
         enemy.agent.Warp(enemy.transform.position);
         enemy.agent.updatePosition = true;
-        enemy.attack.attackCooldown = Random.Range(1, enemy.Data.stats.attackCooldown);
+        enemy.attack.ResetAfterAttack();
+        enemy.health.ResetHitCount();
         enemy.rotationLocked = false;
-        enemy.attack.superArmor = false;
-        enemy.health.hitCount = 0;
     }
 }
