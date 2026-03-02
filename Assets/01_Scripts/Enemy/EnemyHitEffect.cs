@@ -32,7 +32,7 @@ public class EnemyHitEffect : MonoBehaviour
 
     private void HitShake()
     {
-        rootModel.DOShakePosition(shakeDuration, new Vector3(shakeStrength, 0, shakeStrength), shakeVibrato).SetUpdate(UpdateType.Late);
+        rootModel.DOShakePosition(shakeDuration, new Vector3(shakeStrength, 0, shakeStrength), shakeVibrato);
     }
 
     private void HitFlash()
@@ -55,10 +55,10 @@ public class EnemyHitEffect : MonoBehaviour
     private IEnumerator RestoreMaterials()
     {
         HitMaterial.SetColor("_BaseColor", Color.red);
-        yield return new WaitForSecondsRealtime(0.1f);
+        yield return TimeManager.Instance.WaitRealTime(0.1f);
 
         HitMaterial.SetColor("_BaseColor", Color.white);
-        yield return new WaitForSecondsRealtime(0.1f);
+        yield return TimeManager.Instance.WaitRealTime(0.1f);
 
         for (int i = 0; i < renderers.Length; i++)
         {
