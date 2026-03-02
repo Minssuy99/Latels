@@ -31,6 +31,7 @@ public class Damage : MonoBehaviour
     private float punchTimer;
     private bool isPunching;
     private Vector3 originalScale;
+    private Camera cam;
 
     private void Awake()
     {
@@ -40,8 +41,9 @@ public class Damage : MonoBehaviour
 
     public void SetDamage(float damage, Transform targetTransform, Vector3 attackerPos, DamageType type)
     {
-        this.target = targetTransform;
-        this.damageType = type;
+        cam = Camera.main;
+        target = targetTransform;
+        damageType = type;
         damageText.text = ((int)damage).ToString();
         damageText.enableVertexGradient = true;
         damageText.colorGradient = GetGradient(type);
@@ -54,7 +56,7 @@ public class Damage : MonoBehaviour
         isPunching = true;
 
         Vector3 headPos = target.position + Vector3.up;
-        Vector3 enemyScreen = Camera.main.WorldToScreenPoint(headPos);
+        Vector3 enemyScreen = cam.WorldToScreenPoint(headPos);
 
         if (type == DamageType.Player)
         {
@@ -64,7 +66,7 @@ public class Damage : MonoBehaviour
         }
         else
         {
-            Vector3 attackerScreen = Camera.main.WorldToScreenPoint(attackerPos);
+            Vector3 attackerScreen = cam.WorldToScreenPoint(attackerPos);
             Vector2 dir = new Vector2(enemyScreen.x - attackerScreen.x, enemyScreen.y - attackerScreen.y).normalized;
             screenOffset = dir * spawnRange;
         }
@@ -92,7 +94,7 @@ public class Damage : MonoBehaviour
 
     private void Update()
     {
-        if (target == null) return;
+        if (!target) return;
 
         float delta = GetDelta();
         timer += delta;
@@ -126,7 +128,7 @@ public class Damage : MonoBehaviour
         }
 
         Vector3 headPos = target.position + Vector3.up;
-        Vector3 enemyScreen = Camera.main.WorldToScreenPoint(headPos);
+        Vector3 enemyScreen = cam.WorldToScreenPoint(headPos);
         rectTransform.position = enemyScreen + new Vector3(screenOffset.x, screenOffset.y, 0);
     }
 }
