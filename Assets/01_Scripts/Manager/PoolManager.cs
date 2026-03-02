@@ -51,7 +51,7 @@ public class PoolManager : Singleton<PoolManager>
 
     private IEnumerator DelayedReturn(GameObject obj, float delay)
     {
-        yield return new WaitForSeconds(delay);
+        yield return TimeManager.Instance.WaitRealTime(delay);
         Return(obj);
     }
 }
