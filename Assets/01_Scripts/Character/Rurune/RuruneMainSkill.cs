@@ -19,7 +19,6 @@ public class RuruneMainSkill : PlayerMainSkill
 
     private IEnumerator SkillSequence()
     {
-        player.animator.updateMode = AnimatorUpdateMode.UnscaledTime;
         GameObject target = targetDetector.FindNearestTarget()?.gameObject;
 
         if (player.move.MoveDirection.sqrMagnitude > 0)
@@ -27,7 +26,7 @@ public class RuruneMainSkill : PlayerMainSkill
         else if (target)
             transform.LookAt(target.transform);
 
-        yield return new WaitForSecondsRealtime(0.9f);
+        yield return TimeManager.Instance.WaitRealTime(0.9f);
 
         target = targetDetector.FindNearestTarget()?.gameObject;
         if (player.move.MoveDirection.sqrMagnitude > 0)
@@ -38,6 +37,13 @@ public class RuruneMainSkill : PlayerMainSkill
 
     public void OnRuruneSkill()
     {
+        DealDamageInRange();
+        SpawnExplosionEffect();
+        SpawnMuzzleEffect();
+    }
+
+    private void DealDamageInRange()
+    {
         int count = Physics.OverlapSphereNonAlloc(transform.position, range, skillHitBuffer);
         for (int i = 0; i < count; i++)
         {
@@ -45,26 +51,32 @@ public class RuruneMainSkill : PlayerMainSkill
             if (enemy == null) continue;
             if (enemy.currentState is EnemyDeadState) continue;
 
-            enemy.GetComponent<IDamageable>().TakeDamage(player.CharacterData.stats.skillDamage, transform.position);
+            enemy.GetComponent<IDamageable>().TakeDamage(player.SkillDamage, transform.position);
         }
+    }
 
+    private void SpawnExplosionEffect()
+    {
         for (int i = 0; i < effectCount; i++)
         {
             int explosionIndex = Random.Range(0, explosionEffects.Length);
             GameObject explosionEffect = PoolManager.Instance.Get(explosionEffects[explosionIndex]);
             Vector2 randomPos = Random.insideUnitCircle * range;
             explosionEffect.transform.position = new Vector3(transform.position.x + randomPos.x, transform.position.y + Vector3.up.y, transform.position.z + randomPos.y);
-            explosionEffect.GetComponent<ParticleSystem>().Play();
-            PoolManager.Instance.Return(explosionEffect, 2f);
+            TimeManager.Instance.PlayParticle(explosionEffect);
+            PoolManager.Instance.Return(explosionEffect, 5f);
         }
+    }
 
+    private void SpawnMuzzleEffect()
+    {
         foreach (var muzzlePos in attack.MuzzlePosition)
         {
             int muzzleIndex = Random.Range(0, muzzleEffects.Length);
             GameObject muzzleEffect = PoolManager.Instance.Get(muzzleEffects[muzzleIndex]);
             muzzleEffect.transform.position = muzzlePos.position;
-            muzzleEffect.GetComponent<ParticleSystem>().Play();
-            PoolManager.Instance.Return(muzzleEffect, 2f);
+            TimeManager.Instance.PlayParticle(muzzleEffect);
+            PoolManager.Instance.Return(muzzleEffect, 5f);
         }
     }
 
@@ -76,7 +88,12 @@ public class RuruneMainSkill : PlayerMainSkill
 
     public void OnSkillEnd()
     {
-        player.animator.updateMode = AnimatorUpdateMode.Normal;
+        if (StageManager.Instance.IsClear)
+        {
+            player.animator.CrossFade(AnimHash.Idle, 0.2f);
+            EndSkill();
+            return;
+        }
 
         if (player.dash.ConsumeDashBuffer())
         {
@@ -86,11 +103,11 @@ public class RuruneMainSkill : PlayerMainSkill
         }
 
         if (player.isLockedOn)
-            player.animator.Play(AnimHash.LockOn, 0, 0);
+            player.animator.CrossFade(AnimHash.LockOn, 0.2f, 0);
         else if (player.move.MoveDirection.sqrMagnitude > 0)
-            player.animator.Play(AnimHash.Run, 0, 0);
+            player.animator.CrossFade(AnimHash.Run, 0.2f, 0);
         else
-            player.animator.Play(AnimHash.Idle, 0, 0);
+            player.animator.CrossFade(AnimHash.Idle, 0.2f, 0);
 
         EndSkill();
     }
