@@ -8,7 +8,7 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private UIScreen chapterScreen;
     [SerializeField] private UIScreen stageScreen;
 
-    private Stack<UIScreen> screenStack = new();
+    private readonly Stack<UIScreen> screenStack = new();
     private bool isTransitioning;
 
     protected override void Awake()
@@ -24,7 +24,7 @@ public class UIManager : Singleton<UIManager>
 
     private void Start()
     {
-        if (GameManager.Instance.returnToStage)
+        if (GameManager.Instance.ReturnToStage)
         {
             GameManager.Instance.SetReturnToStage(false);
 
@@ -43,7 +43,7 @@ public class UIManager : Singleton<UIManager>
         UIScreen previous = null;
         bool hideLobby = false;
 
-        if (screenStack.Count == 0)
+        if (screenStack.Count == 0 && screen.screenType == ScreenType.FullScreen)
             hideLobby = true;
         else if (screen.screenType == ScreenType.FullScreen)
             previous = screenStack.Peek();
@@ -76,7 +76,7 @@ public class UIManager : Singleton<UIManager>
                 isTransitioning = false;
             });
         }
-        else if (screenStack.Count == 0)
+        else if (screenStack.Count == 0 && current.screenType == ScreenType.FullScreen)
         {
             isTransitioning = true;
             current.OnExit(() =>
@@ -85,10 +85,30 @@ public class UIManager : Singleton<UIManager>
                 isTransitioning = false;
             });
         }
+        else if (screenStack.Count == 0)
+        {
+            current.OnExit(null);
+        }
         else
         {
             current.OnExit(null);
         }
+    }
+
+    public void Home()
+    {
+        if (isTransitioning) return;
+        isTransitioning = true;
+
+        FadeManager.Instance.PlayFade(FadeDirection.LeftToRight, () =>
+        {
+            while (screenStack.Count > 0)
+            {
+                screenStack.Pop().OnExit(null);
+            }
+            lobbyScreen.OnEnter(null);
+            isTransitioning = false;
+        }, 1f);
     }
 
     public void PopCurrent()

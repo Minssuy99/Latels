@@ -22,6 +22,11 @@ public class UIScreen : MonoBehaviour
         UIManager.Instance.Back();
     }
 
+    public void GoHome()
+    {
+        UIManager.Instance.Home();
+    }
+
     public virtual void OnEnter(Action onComplete)
     {
 
