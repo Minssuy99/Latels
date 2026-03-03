@@ -13,11 +13,18 @@ public class EnemyHpBar : MonoBehaviour
 
     public void SetTarget(EnemyHealth enemy)
     {
+        if (enemyHealth != null)
+        {
+            enemyHealth.OnDamaged -= OnDamaged;
+        }
+
         cam = Camera.main;
         enemyHealth = enemy;
         target = enemy.transform;
+
         filled.fillAmount = 1;
         trailFilled.fillAmount = 1;
+
         enemy.OnDamaged += OnDamaged;
         gameObject.SetActive(false);
     }
