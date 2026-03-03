@@ -76,7 +76,10 @@ public class Area : MonoBehaviour
 
         if (enemies.Count == 0)
         {
-            gate.SetActive(false);
+            if (gate)
+            {
+                gate.SetActive(false);
+            }
             OnCleared?.Invoke();
 
             if (boss)
