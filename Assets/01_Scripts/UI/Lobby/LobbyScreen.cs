@@ -82,7 +82,10 @@ public class LobbyScreen : UIScreen
             direction = elements[i].hideDirection == HideDirection.Left ? -1 : 1;
             targetX = originalPositions[i].x + direction * hideOffset;
 
+            elements[i].rect.DOKill();
             elements[i].rect.DOAnchorPosX(targetX, duration).SetEase(Ease.InOutQuart);
+
+            canvasGroups[i].DOKill();
             canvasGroups[i].DOFade(0f, duration).SetEase(Ease.InOutQuart);
         }
     }
@@ -94,7 +97,10 @@ public class LobbyScreen : UIScreen
 
         for (int i = 0; i < elements.Length; i++)
         {
+            elements[i].rect.DOKill();
             elements[i].rect.DOAnchorPos(originalPositions[i], duration).SetEase(Ease.InOutQuart);
+
+            canvasGroups[i].DOKill();
             canvasGroups[i].DOFade(1f, duration).SetEase(Ease.InOutQuart);
         }
     }

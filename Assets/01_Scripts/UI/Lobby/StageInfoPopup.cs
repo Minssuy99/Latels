@@ -23,7 +23,10 @@ public class StageInfoPopup : UIScreen
     {
         infoPanel.anchoredPosition = new Vector2(1000, 0);
         gameObject.SetActive(true);
+        canvasGroup.DOKill();
         canvasGroup.DOFade(1, 0.25f);
+
+        infoPanel.DOKill();
         infoPanel.DOAnchorPosX(0, 0.25f).OnComplete(() =>
         {
             onComplete?.Invoke();
@@ -32,7 +35,10 @@ public class StageInfoPopup : UIScreen
 
     public override void OnExit(Action onComplete)
     {
+        canvasGroup.DOKill();
         canvasGroup.DOFade(0, 0.25f);
+
+        infoPanel.DOKill();
         infoPanel.DOAnchorPosX(1000, 0.25f).OnComplete(() =>
         {
             gameObject.SetActive(false);

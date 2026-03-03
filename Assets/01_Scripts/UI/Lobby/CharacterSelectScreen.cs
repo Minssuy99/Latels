@@ -61,6 +61,7 @@ public class CharacterSelectScreen : UIScreen
 
         lobbyCam.SetDefaultView();
 
+        characterPanel.DOKill();
         characterPanel.DOAnchorPosX(0, 0.25f);
         characterPanel.DOScale(new Vector3(1f, 1f), 0.25f);
 
@@ -74,6 +75,8 @@ public class CharacterSelectScreen : UIScreen
         confirmButton.SetActive(false);
         characterList.gameObject.SetActive(false);
         backButtonPanel.gameObject.SetActive(false);
+
+        characterList.DOKill();
         characterList.DOAnchorPosX(830f, 0.25f);
 
         onComplete?.Invoke();
@@ -120,12 +123,15 @@ public class CharacterSelectScreen : UIScreen
 
         lobbyCam.MoveToPanelView();
 
+        characterPanel.DOKill();
         characterPanel.DOAnchorPosX(-360, 0.25f);
         characterPanel.DOScale(new Vector3(0.85f, 0.85f), 0.25f);
         startButton.SetActive(false);
         confirmButton.SetActive(true);
         backButtonPanel.gameObject.SetActive(true);
         characterList.gameObject.SetActive(true);
+
+        characterList.DOKill();
         characterList.DOAnchorPosX(0, 0.25f);
     }
 
@@ -137,11 +143,14 @@ public class CharacterSelectScreen : UIScreen
         isPanelOpen = false;
         lobbyCam.MoveToDefaultView();
 
+        characterPanel.DOKill();
         characterPanel.DOAnchorPosX(0, 0.25f);
         characterPanel.DOScale(new Vector3(1f, 1f), 0.25f);
         startButton.SetActive(true);
         confirmButton.SetActive(false);
         backButtonPanel.gameObject.SetActive(false);
+
+        characterList.DOKill();
         characterList.DOAnchorPosX(900f, 0.25f).OnComplete(() =>
         {
             characterList.gameObject.SetActive(false);
@@ -268,6 +277,7 @@ public class CharacterSelectScreen : UIScreen
         if(pickRotation != null) pickRotation.Kill();
         pickIndicator.rotation = Quaternion.identity;
 
+        pickIndicator.DOKill();
         pickRotation = pickIndicator.DORotate(new Vector3(0, 360, 0), 2f, RotateMode.FastBeyond360)
             .SetLoops(-1, LoopType.Restart)
             .SetEase(Ease.Linear);
@@ -278,6 +288,7 @@ public class CharacterSelectScreen : UIScreen
         alertCanvasGroup.alpha = 0;
         alertCanvasGroup.gameObject.SetActive(true);
 
+        alertCanvasGroup.DOKill();
         alertCanvasGroup.DOFade(1, 0.3f)
             .OnComplete(() =>
             {

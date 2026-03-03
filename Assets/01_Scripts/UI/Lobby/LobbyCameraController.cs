@@ -24,6 +24,8 @@ public class LobbyCameraController : MonoBehaviour
 
     public void MoveToPanelView()
     {
+        cam.DOKill();
+        cam.transform.DOKill();
         cam.transform.DOMove(panelPos.position, 0.25f);
         cam.transform.DORotate(panelPos.rotation.eulerAngles, 0.25f);
         cam.DOFieldOfView(defaultFOV + 3f, 0.25f);
@@ -31,6 +33,8 @@ public class LobbyCameraController : MonoBehaviour
 
     public void MoveToDefaultView()
     {
+        cam.DOKill();
+        cam.transform.DOKill();
         cam.transform.DOMove(defaultPos.position, 0.25f);
         cam.transform.DORotate(defaultPos.rotation.eulerAngles, 0.25f);
         cam.DOFieldOfView(defaultFOV, 0.25f);
