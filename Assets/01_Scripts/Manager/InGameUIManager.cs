@@ -31,15 +31,12 @@ public class InGameUIManager : Singleton<InGameUIManager>
     public void SubscribeEnemy(EnemyHealth enemyHealth)
     {
         enemyHpHolder.CreateHpBar(enemyHealth);
-        enemyHealth.OnDamaged += (damage, attackerPos) =>
-        {
-            damageHolder.SpawnDamagePopup(damage, enemyHealth.transform, attackerPos, DamageType.Enemy);
-        };
+        damageHolder.SubscribeEnemy(enemyHealth);
     }
 
-    public void CreateEnemyHpBar(EnemyHealth enemy)
+    public void UnsubscribeEnemy(EnemyHealth enemyHealth)
     {
-        enemyHpHolder.CreateHpBar(enemy);
+        damageHolder.UnsubscribeEnemy(enemyHealth);
     }
 
     public void ShowBossHp(EnemyHealth boss)

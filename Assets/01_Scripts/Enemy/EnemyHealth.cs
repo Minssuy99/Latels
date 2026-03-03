@@ -64,6 +64,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         if (HP <= 0)
         {
             enemy.ChangeState(enemy.deadState);
+            InGameUIManager.Instance.UnsubscribeEnemy(this);
             return;
         }
 
