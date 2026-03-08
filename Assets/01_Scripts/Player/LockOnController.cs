@@ -11,13 +11,13 @@ public class LockOnController : MonoBehaviour, IBattleComponent
 
     private void Update()
     {
-        if (player.IsSprinting) return;
         if (player.IsDashing) return;
         if (player.IsUsingSkill) return;
 
         player.targetEnemy = player.targetDetector.FindNearestTarget();
         player.targetDistance = player.targetDetector.LastDistance;
 
+        if (player.IsSprinting) return;
         UpdateLockOn();
     }
 

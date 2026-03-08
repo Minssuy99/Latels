@@ -92,7 +92,7 @@ public class PlayerDash : MonoBehaviour, IBattleComponent
         {
             if (!player.IsDashing) yield break;
             float step = dashSpeed * TimeManager.Instance.PlayerDelta;
-            player.characterController.Move(dashDirection * step);
+            player.move.MoveWithGravity(dashDirection * dashSpeed);
             moved += step;
             yield return null;
         }

@@ -18,16 +18,18 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
     private float velocityXSmooth;
     private float velocityZSmooth;
 
-    private float groundY;
+    [SerializeField] private float gravity = -20f;
+    [SerializeField] private float groundStickForce = -5f;
+    private float verticalVelocity;
+    private bool movedThisFrame;
+    private bool isOnPlatform;
+
+    public void SetOnPlatform(bool value) => isOnPlatform = value;
 
     private void Awake()
     {
         player = GetComponent<PlayerStateManager>();
-    }
-
-    private void Start()
-    {
-        groundY = transform.position.y;
+        targetRotation = transform.rotation;
     }
 
     private void Update()
@@ -42,23 +44,41 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
             MoveDirection = new Vector3(keyboardInput.x, 0, keyboardInput.y);
         }
 
-        if (player.characterController.isGrounded)
-        {
-            groundY = transform.position.y;
-        }
+        UpdateGravity();
+        movedThisFrame = false;
     }
 
     private void LateUpdate()
     {
-        if (transform.position.y > groundY + 0.05f && !player.characterController.isGrounded)
+        if (!movedThisFrame && !isOnPlatform)
         {
-            Vector3 pos = transform.position;
-            pos.y = groundY;
-
-            player.characterController.enabled = false;
-            transform.position = pos;
-            player.characterController.enabled = true;
+            player.characterController.Move(Vector3.up * (verticalVelocity * TimeManager.Instance.PlayerDelta));
         }
+    }
+
+    private void UpdateGravity()
+    {
+        if (isOnPlatform)
+        {
+            verticalVelocity = 0f;
+            return;
+        }
+
+        if (player.characterController.isGrounded)
+        {
+            verticalVelocity = groundStickForce;
+        }
+        else
+        {
+            verticalVelocity += gravity * TimeManager.Instance.PlayerDelta;
+        }
+    }
+
+    public void MoveWithGravity(Vector3 velocity)
+    {
+        velocity.y = verticalVelocity;
+        player.characterController.Move(velocity * TimeManager.Instance.PlayerDelta);
+        movedThisFrame = true;
     }
 
     public void OnMove(InputValue value)
@@ -68,12 +88,18 @@ public class PlayerMovement : MonoBehaviour, IBattleComponent
 
     public void HandleMovement(bool isRunning = false)
     {
+        Vector3 moveVector = Vector3.zero;
+
         if (MoveDirection.sqrMagnitude > 0f)
         {
             CheckDirection();
             float speed = isRunning ? sprintSpeed : moveSpeed;
-            player.characterController.Move(lastDirection * (speed * TimeManager.Instance.PlayerDelta));
+            moveVector = lastDirection * speed;
         }
+
+        moveVector.y = verticalVelocity;
+        player.characterController.Move(moveVector * TimeManager.Instance.PlayerDelta);
+        movedThisFrame = true;
     }
 
     public void HandleRotation()

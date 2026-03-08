@@ -108,18 +108,4 @@ public abstract class PlayerAttack : MonoBehaviour
     {
         player.animator.SetTrigger(AnimHash.Attack);
     }
-
-    private void OnDrawGizmosSelected()
-    {
-        if (player.CharacterData == null) return;
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, player.AttackRange);
-
-        if (player == null || player.targetEnemy == null)
-            return;
-
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(transform.position, player.targetEnemy.transform.position);
-    }
 }
